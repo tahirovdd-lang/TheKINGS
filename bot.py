@@ -3,48 +3,32 @@ import logging
 import json
 import os
 import time
-from typing import Any, Dict, List, Tuple
 
-from aiogram import Bot, Dispatcher, Router, types, F
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
-
-from db import init_db, slot_taken, create_appointment
+from aiogram.types import (
+    ReplyKeyboardMarkup, KeyboardButton, WebAppInfo,
+    InlineKeyboardMarkup, InlineKeyboardButton
+)
 
 logging.basicConfig(level=logging.INFO)
 
-# ====== BOT TOKEN из окружения ======
+# ====== НАСТРОЙКИ ======
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise RuntimeError("❌ BOT_TOKEN не найден. Добавь переменную окружения BOT_TOKEN.")
 
-# ✅ THE KINGS
-ADMIN_ID = 6013591658
+# ✅ НОВЫЕ ДАННЫЕ
+BOT_USERNAME = "ORZUDILbot"              # без @
+ADMIN_ID = 6013591658                   # ID Admin
+CHANNEL_ID = "@ORZUDILKAFE"              # канал (без https://t.me/)
 
-# ✅ WEBAPP URL (GitHub Pages репо TheKINGS)
-WEBAPP_URL = "https://tahirovdd-lang.github.io/TheKINGS/?v=1"
-
-# ====== Справочники услуг (как в твоём app.js) ======
-SERVICES = [
-    {"id": 1, "name": "Стрижка", "duration": 45, "price": 60000},
-    {"id": 2, "name": "Борода", "duration": 30, "price": 40000},
-    {"id": 3, "name": "Стрижка + Борода", "duration": 75, "price": 90000},
-    {"id": 4, "name": "Укладка", "duration": 20, "price": 25000},
-]
-SERV_BY_ID = {s["id"]: s for s in SERVICES}
-
-# Если хочешь — можешь подписать имена мастеров (по id из WebApp)
-MASTERS = {
-    1: "Aziz",
-    2: "Javohir",
-    3: "Sardor",
-}
+# ✅ WEBAPP URL (GitHub Pages)
+WEBAPP_URL = "https://tahirovdd-lang.github.io/orzu-dil/?v=1"
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
-router = Router()
-dp.include_router(router)
 
 # ====== АНТИ-ДУБЛЬ START ======
 _last_start: dict[int, float] = {}
@@ -57,8 +41,9 @@ def allow_start(user_id: int, ttl: float = 2.0) -> bool:
     _last_start[user_id] = now
     return True
 
+
 # ====== КНОПКИ ======
-BTN_OPEN_MULTI = "Записаться 👑💈"
+BTN_OPEN_MULTI = "Ochish • Открыть • Open"
 
 def kb_webapp_reply() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
@@ -66,47 +51,68 @@ def kb_webapp_reply() -> ReplyKeyboardMarkup:
         resize_keyboard=True
     )
 
+def kb_channel_deeplink() -> InlineKeyboardMarkup:
+    # deep link для открытия WebApp из поста в канале
+    deeplink = f"https://t.me/{BOT_USERNAME}?startapp=menu"
+    return InlineKeyboardMarkup(
+        inline_keyboard=[[InlineKeyboardButton(text=BTN_OPEN_MULTI, url=deeplink)]]
+    )
+
+
 # ====== ТЕКСТ ======
 def welcome_text() -> str:
     return (
-        "🇷🇺 Добро пожаловать в <b>THE KINGS BARBERSHOP</b> 👑💈\n"
-        "Запишитесь на удобное время и выберите услуги — нажмите кнопку ниже.\n\n"
-        "🇺🇿 <b>THE KINGS BARBERSHOP</b> 👑💈 ga xush kelibsiz!\n"
-        "Qulay vaqtga yoziling va xizmatlarni tanlang — pastdagi tugmani bosing.\n\n"
-        "🇬🇧 Welcome to <b>THE KINGS BARBERSHOP</b> 👑💈\n"
-        "Book a time and choose services — tap the button below."
+        "🇷🇺 Добро пожаловать в <b>ORZU-DIL</b>! 👋 "
+        "Выберите любимые блюда и оформите заказ — просто нажмите «Открыть» ниже.\n\n"
+        "🇺🇿 <b>ORZU-DIL</b> ga xush kelibsiz! 👋 "
+        "Sevimli taomlaringizni tanlang va buyurtma bering — buning uchun pastdagi «Ochish» tugmasini bosing.\n\n"
+        "🇬🇧 Welcome to <b>ORZU-DIL</b>! 👋 "
+        "Choose your favorite dishes and place an order — just tap “Open” below."
     )
 
+
 # ====== /start ======
-@router.message(CommandStart())
+@dp.message(CommandStart())
 async def start(message: types.Message):
     if not allow_start(message.from_user.id):
         return
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
 
-@router.message(Command("startapp"))
+@dp.message(Command("startapp"))
 async def startapp(message: types.Message):
     if not allow_start(message.from_user.id):
         return
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
 
-# ====== HELPERS ======
-def clean_str(v) -> str:
-    return ("" if v is None else str(v)).strip()
 
-def safe_int(v, default=0) -> int:
+# ====== ПОСТ В КАНАЛ ======
+@dp.message(Command("post_menu"))
+async def post_menu(message: types.Message):
+    if message.from_user.id != ADMIN_ID:
+        return await message.answer("⛔️ Нет доступа.")
+
+    text = (
+        "🇷🇺 <b>ORZU-DIL</b>\nНажмите кнопку ниже, чтобы открыть меню.\n\n"
+        "🇺🇿 <b>ORZU-DIL</b>\nPastdagi tugma orqali menyuni oching.\n\n"
+        "🇬🇧 <b>ORZU-DIL</b>\nTap the button below to open the menu."
+    )
+
     try:
-        if v is None or isinstance(v, bool):
-            return default
-        if isinstance(v, (int, float)):
-            return int(v)
-        s = str(v).strip().replace(" ", "")
-        if s == "":
-            return default
-        return int(float(s))
-    except Exception:
-        return default
+        sent = await bot.send_message(CHANNEL_ID, text, reply_markup=kb_channel_deeplink())
+        try:
+            await bot.pin_chat_message(CHANNEL_ID, sent.message_id, disable_notification=True)
+            await message.answer("✅ Пост отправлен в канал и закреплён.")
+        except Exception:
+            await message.answer(
+                "✅ Пост отправлен в канал.\n"
+                "⚠️ Не удалось закрепить — дай боту право «Закреплять сообщения» или закрепи вручную."
+            )
+    except Exception as e:
+        logging.exception("CHANNEL POST ERROR")
+        await message.answer(f"❌ Ошибка отправки в канал: <code>{e}</code>")
 
+
+# ====== ВСПОМОГАТЕЛЬНЫЕ ======
 def fmt_sum(n: int) -> str:
     try:
         n = int(n)
@@ -117,175 +123,158 @@ def fmt_sum(n: int) -> str:
 def tg_label(u: types.User) -> str:
     return f"@{u.username}" if u.username else u.full_name
 
-def services_from_payload(data: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], int, int, List[str]]:
+def clean_str(v) -> str:
+    return ("" if v is None else str(v)).strip()
+
+def safe_int(v, default=0) -> int:
+    try:
+        if v is None:
+            return default
+        if isinstance(v, bool):
+            return default
+        if isinstance(v, (int, float)):
+            return int(v)
+        s = str(v).strip().replace(" ", "")
+        if s == "":
+            return default
+        return int(float(s))
+    except Exception:
+        return default
+
+def build_order_lines(data: dict) -> tuple[list[str], dict]:
     """
-    Поддерживаем 2 формата:
-    A) Новый (из твоего app.js): servicesIds: [1,2,3]
-    B) Старый: services: [{name, price, duration}, ...]
-    Возвращаем: services(list of dict), total_price, duration_min, lines(text)
+    WebApp может присылать:
+      - order: {id/name: qty}
+      - items: [{name, qty, price, sum, id}, ...]
+      - cart:  {id/name: qty}
+    Возвращаем (lines, normalized_order_dict)
     """
-    lines: List[str] = []
-    total = 0
-    dur = 0
-    services: List[Dict[str, Any]] = []
+    order_dict: dict = {}
 
-    # A) servicesIds
-    ids = data.get("servicesIds")
-    if isinstance(ids, list) and ids:
-        for sid in ids:
-            sid_i = safe_int(sid, 0)
-            s = SERV_BY_ID.get(sid_i)
-            if not s:
+    raw_order = data.get("order")
+    raw_items = data.get("items")
+    raw_cart = data.get("cart")
+
+    # 1) order dict
+    if isinstance(raw_order, dict):
+        for k, v in raw_order.items():
+            q = safe_int(v, 0)
+            if q > 0:
+                order_dict[str(k)] = q
+
+    # 2) cart dict (fallback)
+    if not order_dict and isinstance(raw_cart, dict):
+        for k, v in raw_cart.items():
+            q = safe_int(v, 0)
+            if q > 0:
+                order_dict[str(k)] = q
+
+    # 3) items list (fallback)
+    lines: list[str] = []
+    if isinstance(raw_items, list) and raw_items:
+        for it in raw_items:
+            if not isinstance(it, dict):
                 continue
-            services.append({"id": s["id"], "name": s["name"], "price": s["price"], "duration": s["duration"]})
-            total += s["price"]
-            dur += s["duration"]
-            lines.append(f"• {s['name']} — {fmt_sum(s['price'])} сум • {s['duration']} мин")
-
-        if not lines:
-            lines = ["⚠️ Услуги не указаны"]
-        return services, total, dur, lines
-
-    # B) services list
-    raw_services = data.get("services", [])
-    if isinstance(raw_services, list) and raw_services:
-        for s in raw_services:
-            if not isinstance(s, dict):
+            name = clean_str(it.get("name")) or clean_str(it.get("title")) or clean_str(it.get("id")) or "—"
+            qty = safe_int(it.get("qty"), 0)
+            if qty <= 0:
                 continue
-            name = clean_str(s.get("name")) or "—"
-            price = safe_int(s.get("price"), 0)
-            duration = safe_int(s.get("duration"), 0)
-            services.append({"name": name, "price": price, "duration": duration})
-            total += max(0, price)
-            dur += max(0, duration)
 
-            if price > 0 and duration > 0:
-                lines.append(f"• {name} — {fmt_sum(price)} сум • {duration} мин")
+            # нормализуем order_dict, если он пуст/нет
+            if not order_dict:
+                key = clean_str(it.get("id")) or name
+                order_dict[key] = qty
+
+            price = safe_int(it.get("price"), 0)
+            ssum = safe_int(it.get("sum"), 0)
+            if ssum > 0:
+                lines.append(f"• {name} × {qty} = {fmt_sum(ssum)} сум")
             elif price > 0:
-                lines.append(f"• {name} — {fmt_sum(price)} сум")
+                lines.append(f"• {name} × {qty} = {fmt_sum(price * qty)} сум")
             else:
-                lines.append(f"• {name}")
+                lines.append(f"• {name} × {qty}")
+
+    # Если items не дали lines — строим lines из order_dict
+    if not lines and order_dict:
+        for k, q in order_dict.items():
+            lines.append(f"• {k} × {q}")
 
     if not lines:
-        lines = ["⚠️ Услуги не указаны"]
-    return services, total, dur, lines
+        lines = ["⚠️ Корзина пустая"]
 
-def master_from_payload(data: Dict[str, Any]) -> Tuple[int, str]:
-    """
-    Поддерживаем:
-    - masterId (новый)
-    - master_id (старый)
-    - master_name (если присылаешь строкой)
-    """
-    mid = safe_int(data.get("masterId"), 0)
-    if mid <= 0:
-        mid = safe_int(data.get("master_id"), 0)
+    return lines, order_dict
 
-    mname = clean_str(data.get("master_name"))
-    if not mname and mid > 0:
-        mname = MASTERS.get(mid, f"Мастер #{mid}")
-    if not mname:
-        mname = "—"
-    return mid, mname
 
-# ====== RECEIVING WEBAPP DATA ======
-@router.message(F.web_app_data)
+# ====== ЗАКАЗ ИЗ WEBAPP ======
+@dp.message(F.web_app_data)
 async def webapp_data(message: types.Message):
     raw = message.web_app_data.data
     logging.info(f"WEBAPP DATA RAW: {raw}")
 
-    await message.answer("✅ <b>Заявка получена.</b> Обрабатываю…")
+    await message.answer("✅ <b>Получил заказ.</b> Обрабатываю…")
 
     try:
         data = json.loads(raw) if raw else {}
     except Exception:
         data = {}
+
     if not isinstance(data, dict):
         data = {}
 
-    user_name = clean_str(data.get("name")) or message.from_user.full_name
-    user_phone = clean_str(data.get("phone"))
+    lines, _normalized_order = build_order_lines(data)
+
+    total_num = safe_int(data.get("total_num"), 0)
+    total_str = clean_str(data.get("total")) or fmt_sum(total_num)
+
+    payment = clean_str(data.get("payment")) or "—"
+    order_type = clean_str(data.get("type")) or "—"
+    address = clean_str(data.get("address")) or "—"
+    phone = clean_str(data.get("phone")) or "—"
     comment = clean_str(data.get("comment"))
+    order_id = clean_str(data.get("order_id")) or "—"
 
-    master_id, master_name = master_from_payload(data)
-    date_str = clean_str(data.get("date"))
-    time_str = clean_str(data.get("time"))
+    pay_label = {"cash": "💵 Наличные", "click": "💳 Безнал (CLICK)"}.get(payment, payment)
+    type_label = {"delivery": "🚚 Доставка", "pickup": "🏃 Самовывоз"}.get(order_type, order_type)
 
-    services, calc_total, calc_dur, lines = services_from_payload(data)
-
-    # Если вдруг WebApp прислал total/dur — используем как приоритет, иначе расчёт
-    total_price = safe_int(data.get("total_price"), calc_total)
-    duration_min = safe_int(data.get("duration_min"), calc_dur)
-
-    # Валидация
-    if master_id <= 0 or not date_str or not time_str:
-        await message.answer("⚠️ Данные неполные. Откройте WebApp и отправьте снова.")
-        return
-
-    # Слот занят?
-    if slot_taken(master_id, date_str, time_str):
-        await message.answer(
-            "⛔️ <b>Это время уже занято.</b>\n"
-            "Пожалуйста, выберите другое время и отправьте заявку снова."
-        )
-        return
-
-    # Сохраняем в БД
-    appt_id = create_appointment({
-        "user_id": message.from_user.id,
-        "user_name": user_name,
-        "user_phone": user_phone,
-        "master_id": master_id,
-        "master_name": master_name,
-        "date": date_str,
-        "time": time_str,
-        "duration_min": duration_min,
-        "total_price": total_price,
-        "services_json": json.dumps(services, ensure_ascii=False),
-        "comment": comment,
-        "status": "pending",
-    })
-
-    # Админу
+    # ====== АДМИН ======
     admin_text = (
-        "🚨 <b>НОВАЯ ЗАПИСЬ — THE KINGS BARBERSHOP</b>\n"
-        f"🆔 <b>#{appt_id}</b>\n\n"
-        "<b>Услуги:</b>\n" + "\n".join(lines) +
-        f"\n\n💰 <b>Сумма:</b> {fmt_sum(total_price)} сум"
-        f"\n⏱ <b>Длительность:</b> {duration_min} мин"
-        f"\n💈 <b>Мастер:</b> {master_name}"
-        f"\n🗓 <b>Дата:</b> {date_str}"
-        f"\n⏰ <b>Время:</b> {time_str}"
-        f"\n📞 <b>Телефон:</b> {user_phone or '—'}"
-        f"\n👤 <b>Клиент:</b> {user_name}"
+        "🚨 <b>НОВЫЙ ЗАКАЗ ORZU-DIL</b>\n"
+        f"🆔 <b>{order_id}</b>\n\n"
+        + "\n".join(lines) +
+        f"\n\n💰 <b>Сумма:</b> {total_str} сум"
+        f"\n🚚 <b>Тип:</b> {type_label}"
+        f"\n💳 <b>Оплата:</b> {pay_label}"
+        f"\n📍 <b>Адрес:</b> {address}"
+        f"\n📞 <b>Телефон:</b> {phone}"
         f"\n👤 <b>Telegram:</b> {tg_label(message.from_user)}"
     )
+
     if comment:
         admin_text += f"\n💬 <b>Комментарий:</b> {comment}"
 
     await bot.send_message(ADMIN_ID, admin_text)
 
-    # Клиенту
+    # ====== КЛИЕНТ ======
     client_text = (
-        "✅ <b>Ваша запись принята!</b>\n"
-        "Мы скоро свяжемся для подтверждения.\n\n"
-        f"🆔 <b>#{appt_id}</b>\n"
-        f"💈 <b>Мастер:</b> {master_name}\n"
-        f"🗓 <b>Дата:</b> {date_str}\n"
-        f"⏰ <b>Время:</b> {time_str}\n\n"
-        "<b>Услуги:</b>\n" + "\n".join(lines) +
-        f"\n\n💰 <b>Сумма:</b> {fmt_sum(total_price)} сум"
-        f"\n⏱ <b>Длительность:</b> {duration_min} мин"
+        "✅ <b>Ваш заказ принят!</b>\n"
+        "🙏 Спасибо за заказ!\n\n"
+        f"🆔 <b>{order_id}</b>\n\n"
+        "<b>Состав заказа:</b>\n"
+        + "\n".join(lines) +
+        f"\n\n💰 <b>Сумма:</b> {total_str} сум"
+        f"\n🚚 <b>Тип:</b> {type_label}"
+        f"\n💳 <b>Оплата:</b> {pay_label}"
+        f"\n📍 <b>Адрес:</b> {address}"
+        f"\n📞 <b>Телефон:</b> {phone}"
     )
     if comment:
         client_text += f"\n💬 <b>Комментарий:</b> {comment}"
 
     await message.answer(client_text)
 
-# ====== LAUNCH ======
+
+# ====== ЗАПУСК ======
 async def main():
-    init_db()
-    logging.info("✅ Bot started polling…")
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
