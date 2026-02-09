@@ -3,6 +3,7 @@ import logging
 import json
 import os
 import time
+from typing import Any, Dict, List, Tuple
 
 from aiogram import Bot, Dispatcher, Router, types, F
 from aiogram.filters import CommandStart, Command
@@ -18,10 +19,27 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise RuntimeError("❌ BOT_TOKEN не найден. Добавь переменную окружения BOT_TOKEN.")
 
+# ✅ THE KINGS
 ADMIN_ID = 6013591658
 
-# ✅ NEW WEBAPP URL (GitHub Pages репо TheKINGS)
+# ✅ WEBAPP URL (GitHub Pages репо TheKINGS)
 WEBAPP_URL = "https://tahirovdd-lang.github.io/TheKINGS/?v=1"
+
+# ====== Справочники услуг (как в твоём app.js) ======
+SERVICES = [
+    {"id": 1, "name": "Стрижка", "duration": 45, "price": 60000},
+    {"id": 2, "name": "Борода", "duration": 30, "price": 40000},
+    {"id": 3, "name": "Стрижка + Борода", "duration": 75, "price": 90000},
+    {"id": 4, "name": "Укладка", "duration": 20, "price": 25000},
+]
+SERV_BY_ID = {s["id"]: s for s in SERVICES}
+
+# Если хочешь — можешь подписать имена мастеров (по id из WebApp)
+MASTERS = {
+    1: "Aziz",
+    2: "Javohir",
+    3: "Sardor",
+}
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
@@ -99,18 +117,45 @@ def fmt_sum(n: int) -> str:
 def tg_label(u: types.User) -> str:
     return f"@{u.username}" if u.username else u.full_name
 
-def build_services_lines(services) -> tuple[list[str], int, int]:
-    lines = []
+def services_from_payload(data: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], int, int, List[str]]:
+    """
+    Поддерживаем 2 формата:
+    A) Новый (из твоего app.js): servicesIds: [1,2,3]
+    B) Старый: services: [{name, price, duration}, ...]
+    Возвращаем: services(list of dict), total_price, duration_min, lines(text)
+    """
+    lines: List[str] = []
     total = 0
     dur = 0
+    services: List[Dict[str, Any]] = []
 
-    if isinstance(services, list):
-        for s in services:
+    # A) servicesIds
+    ids = data.get("servicesIds")
+    if isinstance(ids, list) and ids:
+        for sid in ids:
+            sid_i = safe_int(sid, 0)
+            s = SERV_BY_ID.get(sid_i)
+            if not s:
+                continue
+            services.append({"id": s["id"], "name": s["name"], "price": s["price"], "duration": s["duration"]})
+            total += s["price"]
+            dur += s["duration"]
+            lines.append(f"• {s['name']} — {fmt_sum(s['price'])} сум • {s['duration']} мин")
+
+        if not lines:
+            lines = ["⚠️ Услуги не указаны"]
+        return services, total, dur, lines
+
+    # B) services list
+    raw_services = data.get("services", [])
+    if isinstance(raw_services, list) and raw_services:
+        for s in raw_services:
             if not isinstance(s, dict):
                 continue
             name = clean_str(s.get("name")) or "—"
             price = safe_int(s.get("price"), 0)
             duration = safe_int(s.get("duration"), 0)
+            services.append({"name": name, "price": price, "duration": duration})
             total += max(0, price)
             dur += max(0, duration)
 
@@ -123,8 +168,25 @@ def build_services_lines(services) -> tuple[list[str], int, int]:
 
     if not lines:
         lines = ["⚠️ Услуги не указаны"]
+    return services, total, dur, lines
 
-    return lines, total, dur
+def master_from_payload(data: Dict[str, Any]) -> Tuple[int, str]:
+    """
+    Поддерживаем:
+    - masterId (новый)
+    - master_id (старый)
+    - master_name (если присылаешь строкой)
+    """
+    mid = safe_int(data.get("masterId"), 0)
+    if mid <= 0:
+        mid = safe_int(data.get("master_id"), 0)
+
+    mname = clean_str(data.get("master_name"))
+    if not mname and mid > 0:
+        mname = MASTERS.get(mid, f"Мастер #{mid}")
+    if not mname:
+        mname = "—"
+    return mid, mname
 
 # ====== RECEIVING WEBAPP DATA ======
 @router.message(F.web_app_data)
@@ -141,28 +203,26 @@ async def webapp_data(message: types.Message):
     if not isinstance(data, dict):
         data = {}
 
-    # Extract fields from payload (app.js)
     user_name = clean_str(data.get("name")) or message.from_user.full_name
     user_phone = clean_str(data.get("phone"))
     comment = clean_str(data.get("comment"))
 
-    master_id = safe_int(data.get("master_id"), 0)
-    master_name = clean_str(data.get("master_name")) or "—"
+    master_id, master_name = master_from_payload(data)
     date_str = clean_str(data.get("date"))
     time_str = clean_str(data.get("time"))
 
-    services = data.get("services", [])
-    lines, calc_total, calc_dur = build_services_lines(services)
+    services, calc_total, calc_dur, lines = services_from_payload(data)
 
+    # Если вдруг WebApp прислал total/dur — используем как приоритет, иначе расчёт
     total_price = safe_int(data.get("total_price"), calc_total)
     duration_min = safe_int(data.get("duration_min"), calc_dur)
 
-    # Basic validation
+    # Валидация
     if master_id <= 0 or not date_str or not time_str:
         await message.answer("⚠️ Данные неполные. Откройте WebApp и отправьте снова.")
         return
 
-    # Check if time slot is taken
+    # Слот занят?
     if slot_taken(master_id, date_str, time_str):
         await message.answer(
             "⛔️ <b>Это время уже занято.</b>\n"
@@ -170,7 +230,7 @@ async def webapp_data(message: types.Message):
         )
         return
 
-    # Save to DB
+    # Сохраняем в БД
     appt_id = create_appointment({
         "user_id": message.from_user.id,
         "user_name": user_name,
@@ -186,7 +246,7 @@ async def webapp_data(message: types.Message):
         "status": "pending",
     })
 
-    # ADMIN message
+    # Админу
     admin_text = (
         "🚨 <b>НОВАЯ ЗАПИСЬ — THE KINGS BARBERSHOP</b>\n"
         f"🆔 <b>#{appt_id}</b>\n\n"
@@ -205,7 +265,7 @@ async def webapp_data(message: types.Message):
 
     await bot.send_message(ADMIN_ID, admin_text)
 
-    # CLIENT confirmation
+    # Клиенту
     client_text = (
         "✅ <b>Ваша запись принята!</b>\n"
         "Мы скоро свяжемся для подтверждения.\n\n"
