@@ -23,10 +23,8 @@ BOT_USERNAME = os.getenv("BOT_USERNAME", "THE_KINGS_Bot").replace("@", "")  # б
 ADMIN_ID = int(os.getenv("ADMIN_ID", "6013591658"))
 CHANNEL_ID = os.getenv("CHANNEL_ID", "@THEKINGS_BARBERSHOP")
 
-# ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ:
-# GitHub Pages у тебя живой по адресу https://tahirovdd-lang.github.io/TheKINGS/
-# поэтому НЕ используем /index.html (он может давать 404), а открываем корень.
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/TheKINGS/?v=1")
+# ✅ правильный URL: корень GitHub Pages
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/TheKINGS/")
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
@@ -69,6 +67,7 @@ def welcome_text() -> str:
 # ====== /start ======
 @dp.message(CommandStart())
 async def start(message: types.Message):
+    # чтобы бот никогда не "молчал"
     if not allow_start(message.from_user.id):
         return await message.answer("👑 Открывайте запись кнопкой ниже:", reply_markup=kb_webapp_reply())
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
@@ -172,7 +171,6 @@ async def webapp_data(message: types.Message):
 
     booking_id = clean_str(data.get("booking_id") or data.get("id")) or "—"
 
-    # поддерживаем оба варианта: client_name и name
     client_name = clean_str(
         data.get("client_name") or data.get("name") or data.get("client") or data.get("full_name")
     ) or "—"
@@ -232,8 +230,15 @@ async def main():
     logging.info("✅ Bot starting…")
     logging.info(f"WEBAPP_URL = {WEBAPP_URL}")
 
-    await bot.delete_webhook(drop_pending_updates=False)
-    await dp.start_polling(bot)
+    # ✅ ВАЖНО: покажем в логах, какой бот реально запущен
+    me = await bot.get_me()
+    logging.info(f"🤖 BOT = @{me.username} ({me.id})")
+
+    # ✅ полностью выключаем webhook и чистим очередь
+    await bot.delete_webhook(drop_pending_updates=True)
+
+    # ✅ включаем только нужные апдейты
+    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 if __name__ == "__main__":
     asyncio.run(main())
