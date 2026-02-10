@@ -1,1 +1,85 @@
 
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>THE KINGS — Запись</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <link rel="stylesheet" href="./styles.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <img class="logo" src="./logo.jpg" alt="THE KINGS"/>
+      <div>
+        <h1>THE KINGS</h1>
+        <p>BARBERSHOP</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2>Запись</h2>
+
+      <label>Услуги</label>
+      <div id="services" class="grid"></div>
+
+      <label>Мастер</label>
+      <select id="master"></select>
+
+      <div class="row">
+        <div class="col">
+          <label>Дата</label>
+          <input id="date" type="date"/>
+        </div>
+        <div class="col">
+          <label>Время</label>
+          <select id="time"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Имя</label>
+          <input id="name" type="text" placeholder="Ваше имя"/>
+        </div>
+        <div class="col">
+          <label>Телефон</label>
+          <input id="phone" type="tel" placeholder="+998 __ ___ __ __"/>
+        </div>
+      </div>
+
+      <label>Комментарий</label>
+      <textarea id="comment" rows="2" placeholder="Например: коротко по бокам"></textarea>
+
+      <div class="summary">
+        <div>Длительность: <b id="dur">—</b> мин</div>
+        <div>Сумма: <b id="sum">—</b></div>
+      </div>
+
+      <button id="btnSend" class="btn">Подтвердить запись</button>
+      <div id="msg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>Акции</h2>
+      <div id="promos"></div>
+    </div>
+
+    <div class="card">
+      <h2>Контакты</h2>
+      <div class="contacts">
+        <div><b>THE KINGS BARBERSHOP</b></div>
+        <div>📍 г. Самарканд, Улица Узбекистанская, 84</div>
+        <div>🕘 09:00-22:00</div>
+        <div>☎️ +998 98 001 21 07 / +998 90 601 73 71</div>
+        <div>Instagram: @thekings_barbershop_sam</div>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="./app.js"></script>
+</body>
+</html>
