@@ -3,6 +3,7 @@ import logging
 import json
 import os
 import time
+from datetime import datetime
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command
@@ -23,7 +24,6 @@ BOT_USERNAME = os.getenv("BOT_USERNAME", "THE_KINGS_Bot").replace("@", "")  # б
 ADMIN_ID = int(os.getenv("ADMIN_ID", "6013591658"))
 CHANNEL_ID = os.getenv("CHANNEL_ID", "@THEKINGS_BARBERSHOP")
 
-# ✅ ВАЖНО: для GitHub Pages project page лучше index.html
 WEBAPP_URL = os.getenv(
     "WEBAPP_URL",
     "https://tahirovdd-lang.github.io/TheKINGS/index.html?v=1"
@@ -32,10 +32,10 @@ WEBAPP_URL = os.getenv(
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
-# ====== АНТИ-ДУБЛЬ START ======
+# ====== АНТИ-ДУБЛЬ START (мягкий) ======
 _last_start: dict[int, float] = {}
 
-def allow_start(user_id: int, ttl: float = 2.0) -> bool:
+def allow_start(user_id: int, ttl: float = 1.0) -> bool:
     now = time.time()
     prev = _last_start.get(user_id, 0.0)
     if now - prev < ttl:
@@ -136,39 +136,20 @@ def safe_int(v, default=0) -> int:
     except Exception:
         return default
 
-def build_services_lines(data: dict) -> list[str]:
-    raw_items = data.get("items")
-    raw_services = data.get("services") or data.get("order") or data.get("cart")
-
+def build_services_lines_from_services(services: list) -> list[str]:
     lines: list[str] = []
-
-    if isinstance(raw_items, list) and raw_items:
-        for it in raw_items:
-            if not isinstance(it, dict):
-                continue
-            name = clean_str(it.get("name")) or clean_str(it.get("title")) or clean_str(it.get("id")) or "—"
-            qty = safe_int(it.get("qty"), 0)
-            if qty <= 0:
-                continue
-            price = safe_int(it.get("price"), 0)
-            ssum = safe_int(it.get("sum"), 0)
-            if ssum > 0:
-                lines.append(f"• {name} × {qty} = {fmt_sum(ssum)} сум")
-            elif price > 0:
-                lines.append(f"• {name} × {qty} = {fmt_sum(price * qty)} сум")
-            else:
-                lines.append(f"• {name} × {qty}")
-
-    if not lines and isinstance(raw_services, dict):
-        for k, v in raw_services.items():
-            q = safe_int(v, 0)
-            if q > 0:
-                lines.append(f"• {k} × {q}")
-
-    if not lines:
-        lines = ["⚠️ Услуги не выбраны"]
-
-    return lines
+    for it in services:
+        if not isinstance(it, dict):
+            continue
+        name = clean_str(it.get("name")) or "—"
+        qty = safe_int(it.get("qty"), 1) or 1
+        price = safe_int(it.get("price"), 0)
+        dur = safe_int(it.get("duration"), 0)
+        if price > 0:
+            lines.append(f"• {name} × {qty} = {fmt_sum(price * qty)} сум ({dur} мин)")
+        else:
+            lines.append(f"• {name} × {qty} ({dur} мин)")
+    return lines or ["⚠️ Услуги не выбраны"]
 
 # ====== ДАННЫЕ ИЗ WEBAPP ======
 @dp.message(F.web_app_data)
@@ -185,58 +166,52 @@ async def webapp_data(message: types.Message):
     if not isinstance(data, dict):
         data = {}
 
-    lines = build_services_lines(data)
-
-    booking_id = clean_str(data.get("booking_id") or data.get("order_id") or data.get("id")) or "—"
+    # поля из app.js
+    booking_id = clean_str(data.get("booking_id") or data.get("id")) or "—"
+    client_name = clean_str(data.get("client_name") or data.get("name")) or "—"
     phone = clean_str(data.get("phone")) or "—"
     comment = clean_str(data.get("comment"))
 
-    master = clean_str(data.get("master") or data.get("barber")) or "—"
+    master_name = clean_str(data.get("master_name")) or "—"
     date = clean_str(data.get("date")) or "—"
     time_slot = clean_str(data.get("time") or data.get("slot")) or "—"
-    branch = clean_str(data.get("branch") or data.get("location")) or "—"
 
-    payment = clean_str(data.get("payment")) or "—"
-    pay_label = {
-        "cash": "💵 Наличные",
-        "click": "💳 Безнал (CLICK)",
-        "payme": "💳 Payme",
-        "card": "💳 Карта",
-    }.get(payment, payment)
+    total = safe_int(data.get("total"), 0)
+    duration_min = safe_int(data.get("duration_min"), 0)
 
-    total_num = safe_int(data.get("total_num"), 0)
-    total_str = clean_str(data.get("total")) or (fmt_sum(total_num) if total_num > 0 else "—")
+    services = data.get("services") if isinstance(data.get("services"), list) else []
+    lines = build_services_lines_from_services(services)
 
+    # ====== АДМИН ======
     admin_text = (
         "👑 <b>НОВАЯ ЗАПИСЬ — THE KINGS Barbershop</b>\n"
         f"🆔 <b>{booking_id}</b>\n\n"
+        f"👤 <b>Клиент:</b> {client_name}\n"
+        f"📞 <b>Телефон:</b> {phone}\n"
+        f"👤 <b>Telegram:</b> {tg_label(message.from_user)}\n\n"
+        f"✂️ <b>Мастер:</b> {master_name}\n"
+        f"📅 <b>Дата:</b> {date}\n"
+        f"🕒 <b>Время:</b> {time_slot}\n\n"
         "<b>Услуги:</b>\n" + "\n".join(lines) +
-        f"\n\n✂️ <b>Барбер:</b> {master}"
-        f"\n📅 <b>Дата:</b> {date}"
-        f"\n🕒 <b>Время:</b> {time_slot}"
-        f"\n📍 <b>Филиал:</b> {branch}"
-        f"\n💳 <b>Оплата:</b> {pay_label}"
-        f"\n💰 <b>Сумма:</b> {total_str}"
-        f"\n📞 <b>Телефон:</b> {phone}"
-        f"\n👤 <b>Telegram:</b> {tg_label(message.from_user)}"
+        f"\n\n⏱ <b>Длительность:</b> {duration_min if duration_min else '—'} мин"
+        f"\n💰 <b>Сумма:</b> {fmt_sum(total) if total else '—'} сум"
     )
     if comment:
         admin_text += f"\n💬 <b>Комментарий:</b> {comment}"
 
     await bot.send_message(ADMIN_ID, admin_text)
 
+    # ====== КЛИЕНТ ======
     client_text = (
         "✅ <b>Запись отправлена!</b>\n"
         "🙏 Спасибо! Мы скоро подтвердим запись.\n\n"
-        f"🆔 <b>{booking_id}</b>\n\n"
-        "<b>Вы выбрали:</b>\n" + "\n".join(lines) +
-        f"\n\n✂️ <b>Барбер:</b> {master}"
-        f"\n📅 <b>Дата:</b> {date}"
-        f"\n🕒 <b>Время:</b> {time_slot}"
-        f"\n📍 <b>Филиал:</b> {branch}"
-        f"\n💳 <b>Оплата:</b> {pay_label}"
-        f"\n💰 <b>Сумма:</b> {total_str}"
-        f"\n📞 <b>Телефон:</b> {phone}"
+        f"🆔 <b>{booking_id}</b>\n"
+        f"✂️ <b>Мастер:</b> {master_name}\n"
+        f"📅 <b>Дата:</b> {date}\n"
+        f"🕒 <b>Время:</b> {time_slot}\n\n"
+        "<b>Услуги:</b>\n" + "\n".join(lines) +
+        f"\n\n⏱ <b>Длительность:</b> {duration_min if duration_min else '—'} мин"
+        f"\n💰 <b>Сумма:</b> {fmt_sum(total) if total else '—'} сум"
     )
     if comment:
         client_text += f"\n💬 <b>Комментарий:</b> {comment}"
@@ -245,7 +220,9 @@ async def webapp_data(message: types.Message):
 
 # ====== ЗАПУСК ======
 async def main():
-    await bot.delete_webhook(drop_pending_updates=True)
+    logging.info("✅ Bot starting…")
+    # ВАЖНО: не съедаем апдейты при перезапуске, иначе /start может пропасть
+    await bot.delete_webhook(drop_pending_updates=False)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
