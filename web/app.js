@@ -1,37 +1,40 @@
-const tg = (typeof window !== "undefined") ? window.Telegram?.WebApp : null;
+// web/app.js
+(() => {
+  // Если вдруг запустили через Node.js — выходим без ошибок
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    console.log("This script is for browser (Telegram WebApp). Do not run with Node.js.");
+    return;
+  }
 
-const MASTERS = [
-  { id: 1, name: "Aziz" },
-  { id: 2, name: "Javohir" },
-  { id: 3, name: "Sardor" },
-];
+  const tg = window.Telegram?.WebApp || null;
 
-const SERVICES = [
-  { id: 1, name: "Стрижка", duration: 45, price: 60000 },
-  { id: 2, name: "Борода", duration: 30, price: 40000 },
-  { id: 3, name: "Стрижка + Борода", duration: 75, price: 90000 },
-  { id: 4, name: "Укладка", duration: 20, price: 25000 },
-];
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  } else {
+    console.log("Telegram WebApp not found. Running in normal browser mode.");
+  }
 
-const PROMOS = [
-  { title: "Скидка 10% студентам", text: "При предъявлении студенческого." },
-  { title: "Каждый 5-й визит -20%", text: "Скидка на услугу по карте клиента." },
-];
+  const MASTERS = [
+    { id: 1, name: "Aziz" },
+    { id: 2, name: "Javohir" },
+    { id: 3, name: "Sardor" },
+  ];
 
-function el(id){ return document.getElementById(id); }
+  const SERVICES = [
+    { id: 1, name: "Стрижка", duration: 45, price: 60000 },
+    { id: 2, name: "Борода", duration: 30, price: 40000 },
+    { id: 3, name: "Стрижка + Борода", duration: 75, price: 90000 },
+    { id: 4, name: "Укладка", duration: 20, price: 25000 },
+  ];
 
-function todayISO(){
-  const d = new Date();
-  const p = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
-}
+  const PROMOS = [
+    { title: "Скидка 10% студентам", text: "При предъявлении студенческого." },
+    { title: "Каждый 5-й визит -20%", text: "Скидка на услугу по карте клиента." },
+  ];
 
-function fmtSum(n){
-  const x = Number(n) || 0;
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-}
+  const el = (id) => document.getElementById(id);
 
-document.addEventListener("DOMContentLoaded", () => {
   const servicesEl = el("services");
   const masterEl = el("master");
   const dateEl = el("date");
@@ -45,19 +48,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSend = el("btnSend");
   const promosEl = el("promos");
 
-  // ✅ Индикатор что JS реально загрузился
-  if (msgEl) msgEl.textContent = "✅ JS loaded";
-
-  if (tg) {
-    tg.ready();
-    tg.expand();
-  }
-
   let selected = new Set();
 
-  function calc(){
+  function todayISO() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+
+  function fmtSum(n) {
+    const x = Number(n) || 0;
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
+
+  function calc() {
     let total = 0, dur = 0;
     const chosen = [];
+
     for (const id of selected) {
       const s = SERVICES.find(x => x.id === id);
       if (!s) continue;
@@ -65,17 +72,18 @@ document.addEventListener("DOMContentLoaded", () => {
       dur += s.duration;
       chosen.push({ id: s.id, name: s.name, price: s.price, duration: s.duration, qty: 1 });
     }
+
     durEl.textContent = dur ? String(dur) : "—";
     sumEl.textContent = total ? `${fmtSum(total)} so'm` : "—";
     return { total, dur, chosen };
   }
 
-  function buildTimes(){
-    const start = 9*60, end = 22*60, step = 30;
+  function buildTimes() {
+    const start = 9 * 60, end = 22 * 60, step = 30;
     timeEl.innerHTML = "";
-    for (let t=start; t<end; t+=step){
-      const h = String(Math.floor(t/60)).padStart(2,"0");
-      const m = String(t%60).padStart(2,"0");
+    for (let t = start; t < end; t += step) {
+      const h = String(Math.floor(t / 60)).padStart(2, "0");
+      const m = String(t % 60).padStart(2, "0");
       const opt = document.createElement("option");
       opt.value = `${h}:${m}`;
       opt.textContent = `${h}:${m}`;
@@ -83,55 +91,59 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // services
-  SERVICES.forEach(s => {
-    const div = document.createElement("div");
-    div.className = "chip";
-    div.innerHTML = `<b>${s.name}</b><div class="chip-sub">${fmtSum(s.price)} so'm • ${s.duration} мин</div>`;
-    div.onclick = () => {
-      if (selected.has(s.id)) { selected.delete(s.id); div.classList.remove("active"); }
-      else { selected.add(s.id); div.classList.add("active"); }
-      calc();
-    };
-    servicesEl.appendChild(div);
-  });
+  function setMsg(t) { msgEl.textContent = t || ""; }
+  function normalizePhone(p) { return (p || "").trim().replace(/[^\d+]/g, ""); }
 
-  // masters
-  masterEl.innerHTML = "";
-  const def = document.createElement("option");
-  def.value = "";
-  def.textContent = "Выберите мастера";
-  masterEl.appendChild(def);
-  MASTERS.forEach(m => {
-    const o = document.createElement("option");
-    o.value = String(m.id);
-    o.textContent = m.name;
-    masterEl.appendChild(o);
-  });
+  function init() {
+    // услуги
+    servicesEl.innerHTML = "";
+    SERVICES.forEach(s => {
+      const div = document.createElement("div");
+      div.className = "chip";
+      div.innerHTML = `<b>${s.name}</b><div class="chip-sub">${fmtSum(s.price)} so'm • ${s.duration} мин</div>`;
+      div.onclick = () => {
+        if (selected.has(s.id)) { selected.delete(s.id); div.classList.remove("active"); }
+        else { selected.add(s.id); div.classList.add("active"); }
+        calc();
+      };
+      servicesEl.appendChild(div);
+    });
 
-  // promos
-  promosEl.innerHTML = "";
-  PROMOS.forEach(p => {
-    const d = document.createElement("div");
-    d.className = "promo";
-    d.innerHTML = `<b>${p.title}</b><div>${p.text}</div>`;
-    promosEl.appendChild(d);
-  });
+    // мастер
+    masterEl.innerHTML = "";
+    const def = document.createElement("option");
+    def.value = "";
+    def.textContent = "Выберите мастера";
+    masterEl.appendChild(def);
+    MASTERS.forEach(m => {
+      const o = document.createElement("option");
+      o.value = String(m.id);
+      o.textContent = m.name;
+      masterEl.appendChild(o);
+    });
 
-  // defaults
-  dateEl.value = todayISO();
-  buildTimes();
+    // акции
+    promosEl.innerHTML = "";
+    PROMOS.forEach(p => {
+      const d = document.createElement("div");
+      d.className = "promo";
+      d.innerHTML = `<b>${p.title}</b><div>${p.text}</div>`;
+      promosEl.appendChild(d);
+    });
 
-  const u = tg?.initDataUnsafe?.user;
-  if (u?.first_name && !nameEl.value) nameEl.value = u.first_name;
+    dateEl.value = todayISO();
+    buildTimes();
 
-  calc();
+    const u = tg?.initDataUnsafe?.user;
+    if (u?.first_name && !nameEl.value) nameEl.value = u.first_name;
 
-  function setMsg(t){ msgEl.textContent = t || ""; }
-  function normalizePhone(p){ return (p || "").trim().replace(/[^\d+]/g, ""); }
+    calc();
+  }
 
   btnSend.onclick = () => {
+    setMsg("");
     const { total, dur, chosen } = calc();
+
     if (!chosen.length) return setMsg("Выберите услугу.");
     if (!masterEl.value) return setMsg("Выберите мастера.");
     if (!dateEl.value) return setMsg("Выберите дату.");
@@ -164,4 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setMsg("✅ (Тест) Откройте через Telegram WebApp чтобы отправить.");
     }
   };
-});
+
+  init();
+})();
