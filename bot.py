@@ -23,15 +23,15 @@ BOT_USERNAME = os.getenv("BOT_USERNAME", "THE_KINGS_Bot").replace("@", "")  # б
 ADMIN_ID = int(os.getenv("ADMIN_ID", "6013591658"))
 CHANNEL_ID = os.getenv("CHANNEL_ID", "@THEKINGS_BARBERSHOP")
 
-# ✅ Лучше держать URL в ENV, но по умолчанию ставим самый безопасный вариант:
-# - если GitHub Pages настроен на /web, то URL должен быть .../TheKINGS/
-# - если Pages на root, то можно поставить .../TheKINGS/index.html
+# ✅ ГЛАВНОЕ ИЗМЕНЕНИЕ:
+# GitHub Pages у тебя живой по адресу https://tahirovdd-lang.github.io/TheKINGS/
+# поэтому НЕ используем /index.html (он может давать 404), а открываем корень.
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/TheKINGS/?v=1")
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
-# ====== АНТИ-ДУБЛЬ START (не блокируем, а просто игнорируем спам < 0.6 сек) ======
+# ====== АНТИ-ДУБЛЬ START ======
 _last_start: dict[int, float] = {}
 
 def allow_start(user_id: int, ttl: float = 0.6) -> bool:
@@ -69,7 +69,6 @@ def welcome_text() -> str:
 # ====== /start ======
 @dp.message(CommandStart())
 async def start(message: types.Message):
-    # Чтобы бот никогда не "молчал" — если антидубль сработал, просто снова покажем кнопку
     if not allow_start(message.from_user.id):
         return await message.answer("👑 Открывайте запись кнопкой ниже:", reply_markup=kb_webapp_reply())
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
@@ -80,7 +79,7 @@ async def startapp(message: types.Message):
         return await message.answer("👑 Открывайте запись кнопкой ниже:", reply_markup=kb_webapp_reply())
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
 
-# ====== Быстрая проверка что бот жив ======
+# ====== Проверка ======
 @dp.message(Command("ping"))
 async def ping(message: types.Message):
     await message.answer("✅ <b>PONG</b>\nБот работает.", reply_markup=kb_webapp_reply())
@@ -168,17 +167,20 @@ async def webapp_data(message: types.Message):
         data = json.loads(raw) if raw else {}
     except Exception:
         data = {}
-
     if not isinstance(data, dict):
         data = {}
 
-    # поля из app.js
     booking_id = clean_str(data.get("booking_id") or data.get("id")) or "—"
-    client_name = clean_str(data.get("client_name") or data.get("name")) or "—"
+
+    # поддерживаем оба варианта: client_name и name
+    client_name = clean_str(
+        data.get("client_name") or data.get("name") or data.get("client") or data.get("full_name")
+    ) or "—"
+
     phone = clean_str(data.get("phone")) or "—"
     comment = clean_str(data.get("comment"))
 
-    master_name = clean_str(data.get("master_name")) or "—"
+    master_name = clean_str(data.get("master_name") or data.get("master") or data.get("barber")) or "—"
     date = clean_str(data.get("date")) or "—"
     time_slot = clean_str(data.get("time") or data.get("slot")) or "—"
 
@@ -230,9 +232,7 @@ async def main():
     logging.info("✅ Bot starting…")
     logging.info(f"WEBAPP_URL = {WEBAPP_URL}")
 
-    # ВАЖНО: не съедаем апдейты при перезапуске
     await bot.delete_webhook(drop_pending_updates=False)
-
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
