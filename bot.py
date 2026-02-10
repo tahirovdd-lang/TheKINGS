@@ -14,18 +14,15 @@ from aiogram.types import (
 
 logging.basicConfig(level=logging.INFO)
 
-# ====== НАСТРОЙКИ ======
+# ====== НАСТРОЙКИ (из ENV) ======
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise RuntimeError("❌ BOT_TOKEN не найден. Добавь переменную окружения BOT_TOKEN.")
 
-# ✅ ДАННЫЕ THE KINGS
-BOT_USERNAME = "THE_KINGS_Bot"          # без @ (укажи реальный username бота)
-ADMIN_ID = 6013591658                  # твой Telegram ID (админ)
-CHANNEL_ID = "@THEKINGS_BARBERSHOP"    # канал (username канала) или чат/группа
-
-# ✅ WEBAPP URL (GitHub Pages / любой HTTPS)
-WEBAPP_URL = "https://tahirovdd-lang.github.io/the-kings/?v=1"  # поменяй на свой URL
+BOT_USERNAME = os.getenv("BOT_USERNAME", "THE_KINGS_Bot").replace("@", "")  # без @
+ADMIN_ID = int(os.getenv("ADMIN_ID", "6013591658"))
+CHANNEL_ID = os.getenv("CHANNEL_ID", "@THEKINGS_BARBERSHOP")
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/TheKINGS/?v=1")
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
@@ -40,7 +37,6 @@ def allow_start(user_id: int, ttl: float = 2.0) -> bool:
         return False
     _last_start[user_id] = now
     return True
-
 
 # ====== КНОПКИ ======
 BTN_OPEN_MULTI = "Записаться • Book • Ro‘yxatdan o‘tish"
@@ -58,7 +54,6 @@ def kb_channel_deeplink() -> InlineKeyboardMarkup:
         inline_keyboard=[[InlineKeyboardButton(text=BTN_OPEN_MULTI, url=deeplink)]]
     )
 
-
 # ====== ТЕКСТ ======
 def welcome_text() -> str:
     return (
@@ -67,7 +62,6 @@ def welcome_text() -> str:
         "🇺🇿 Xush kelibsiz! Pastdagi tugmani bosib, online yoziling.\n\n"
         "🇬🇧 Welcome! Tap the button below to book an appointment."
     )
-
 
 # ====== /start ======
 @dp.message(CommandStart())
@@ -81,7 +75,6 @@ async def startapp(message: types.Message):
     if not allow_start(message.from_user.id):
         return
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
-
 
 # ====== ПОСТ В КАНАЛ ======
 @dp.message(Command("post_booking"))
@@ -109,7 +102,6 @@ async def post_booking(message: types.Message):
     except Exception as e:
         logging.exception("CHANNEL POST ERROR")
         await message.answer(f"❌ Ошибка отправки в канал: <code>{e}</code>")
-
 
 # ====== ВСПОМОГАТЕЛЬНЫЕ ======
 def fmt_sum(n: int) -> str:
@@ -140,32 +132,17 @@ def safe_int(v, default=0) -> int:
     except Exception:
         return default
 
-def build_services_lines(data: dict) -> tuple[list[str], dict]:
+def build_services_lines(data: dict) -> list[str]:
     """
     WebApp может присылать:
-      - services/order/cart: {id/name: qty}
+      - services/order/cart: {name/id: qty}
       - items: [{name, qty, price, sum, id}, ...]
-    Возвращаем (lines, normalized_dict)
     """
-    order_dict: dict = {}
-
-    raw_order = data.get("services") or data.get("order")
     raw_items = data.get("items")
-    raw_cart = data.get("cart")
-
-    if isinstance(raw_order, dict):
-        for k, v in raw_order.items():
-            q = safe_int(v, 0)
-            if q > 0:
-                order_dict[str(k)] = q
-
-    if not order_dict and isinstance(raw_cart, dict):
-        for k, v in raw_cart.items():
-            q = safe_int(v, 0)
-            if q > 0:
-                order_dict[str(k)] = q
+    raw_services = data.get("services") or data.get("order") or data.get("cart")
 
     lines: list[str] = []
+
     if isinstance(raw_items, list) and raw_items:
         for it in raw_items:
             if not isinstance(it, dict):
@@ -174,11 +151,6 @@ def build_services_lines(data: dict) -> tuple[list[str], dict]:
             qty = safe_int(it.get("qty"), 0)
             if qty <= 0:
                 continue
-
-            if not order_dict:
-                key = clean_str(it.get("id")) or name
-                order_dict[key] = qty
-
             price = safe_int(it.get("price"), 0)
             ssum = safe_int(it.get("sum"), 0)
             if ssum > 0:
@@ -188,17 +160,18 @@ def build_services_lines(data: dict) -> tuple[list[str], dict]:
             else:
                 lines.append(f"• {name} × {qty}")
 
-    if not lines and order_dict:
-        for k, q in order_dict.items():
-            lines.append(f"• {k} × {q}")
+    if not lines and isinstance(raw_services, dict):
+        for k, v in raw_services.items():
+            q = safe_int(v, 0)
+            if q > 0:
+                lines.append(f"• {k} × {q}")
 
     if not lines:
         lines = ["⚠️ Услуги не выбраны"]
 
-    return lines, order_dict
+    return lines
 
-
-# ====== ЗАЯВКА / ЗАПИСЬ ИЗ WEBAPP ======
+# ====== ДАННЫЕ ИЗ WEBAPP ======
 @dp.message(F.web_app_data)
 async def webapp_data(message: types.Message):
     raw = message.web_app_data.data
@@ -210,25 +183,19 @@ async def webapp_data(message: types.Message):
         data = json.loads(raw) if raw else {}
     except Exception:
         data = {}
-
     if not isinstance(data, dict):
         data = {}
 
-    lines, _normalized = build_services_lines(data)
+    lines = build_services_lines(data)
 
-    # Универсальные поля (WebApp может присылать любые)
     booking_id = clean_str(data.get("booking_id") or data.get("order_id") or data.get("id")) or "—"
     phone = clean_str(data.get("phone")) or "—"
     comment = clean_str(data.get("comment"))
 
-    # Для барбершопа (если WebApp присылает)
-    master = clean_str(data.get("master")) or clean_str(data.get("barber")) or "—"
+    master = clean_str(data.get("master") or data.get("barber")) or "—"
     date = clean_str(data.get("date")) or "—"
-    time_slot = clean_str(data.get("time")) or clean_str(data.get("slot")) or "—"
-    branch = clean_str(data.get("branch")) or clean_str(data.get("location")) or "—"
-
-    total_num = safe_int(data.get("total_num"), 0)
-    total_str = clean_str(data.get("total")) or (fmt_sum(total_num) if total_num > 0 else "—")
+    time_slot = clean_str(data.get("time") or data.get("slot")) or "—"
+    branch = clean_str(data.get("branch") or data.get("location")) or "—"
 
     payment = clean_str(data.get("payment")) or "—"
     pay_label = {
@@ -237,6 +204,9 @@ async def webapp_data(message: types.Message):
         "payme": "💳 Payme",
         "card": "💳 Карта",
     }.get(payment, payment)
+
+    total_num = safe_int(data.get("total_num"), 0)
+    total_str = clean_str(data.get("total")) or (fmt_sum(total_num) if total_num > 0 else "—")
 
     # ====== АДМИН ======
     admin_text = (
@@ -259,8 +229,8 @@ async def webapp_data(message: types.Message):
 
     # ====== КЛИЕНТ ======
     client_text = (
-        "✅ <b>Вы записаны!</b>\n"
-        "🙏 Спасибо! Мы скоро подтвердим запись (если нужно).\n\n"
+        "✅ <b>Запись отправлена!</b>\n"
+        "🙏 Спасибо! Мы скоро подтвердим запись.\n\n"
         f"🆔 <b>{booking_id}</b>\n\n"
         "<b>Вы выбрали:</b>\n" + "\n".join(lines) +
         f"\n\n✂️ <b>Барбер:</b> {master}"
@@ -275,7 +245,6 @@ async def webapp_data(message: types.Message):
         client_text += f"\n💬 <b>Комментарий:</b> {comment}"
 
     await message.answer(client_text, reply_markup=kb_webapp_reply())
-
 
 # ====== ЗАПУСК ======
 async def main():
