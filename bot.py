@@ -22,7 +22,12 @@ if not BOT_TOKEN:
 BOT_USERNAME = os.getenv("BOT_USERNAME", "THE_KINGS_Bot").replace("@", "")  # без @
 ADMIN_ID = int(os.getenv("ADMIN_ID", "6013591658"))
 CHANNEL_ID = os.getenv("CHANNEL_ID", "@THEKINGS_BARBERSHOP")
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/TheKINGS/?v=1")
+
+# ✅ ВАЖНО: для GitHub Pages project page лучше index.html
+WEBAPP_URL = os.getenv(
+    "WEBAPP_URL",
+    "https://tahirovdd-lang.github.io/TheKINGS/index.html?v=1"
+)
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
@@ -48,7 +53,6 @@ def kb_webapp_reply() -> ReplyKeyboardMarkup:
     )
 
 def kb_channel_deeplink() -> InlineKeyboardMarkup:
-    # deep link для открытия WebApp из поста в канале
     deeplink = f"https://t.me/{BOT_USERNAME}?startapp=booking"
     return InlineKeyboardMarkup(
         inline_keyboard=[[InlineKeyboardButton(text=BTN_OPEN_MULTI, url=deeplink)]]
@@ -133,11 +137,6 @@ def safe_int(v, default=0) -> int:
         return default
 
 def build_services_lines(data: dict) -> list[str]:
-    """
-    WebApp может присылать:
-      - services/order/cart: {name/id: qty}
-      - items: [{name, qty, price, sum, id}, ...]
-    """
     raw_items = data.get("items")
     raw_services = data.get("services") or data.get("order") or data.get("cart")
 
@@ -208,7 +207,6 @@ async def webapp_data(message: types.Message):
     total_num = safe_int(data.get("total_num"), 0)
     total_str = clean_str(data.get("total")) or (fmt_sum(total_num) if total_num > 0 else "—")
 
-    # ====== АДМИН ======
     admin_text = (
         "👑 <b>НОВАЯ ЗАПИСЬ — THE KINGS Barbershop</b>\n"
         f"🆔 <b>{booking_id}</b>\n\n"
@@ -227,7 +225,6 @@ async def webapp_data(message: types.Message):
 
     await bot.send_message(ADMIN_ID, admin_text)
 
-    # ====== КЛИЕНТ ======
     client_text = (
         "✅ <b>Запись отправлена!</b>\n"
         "🙏 Спасибо! Мы скоро подтвердим запись.\n\n"
