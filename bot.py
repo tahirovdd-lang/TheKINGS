@@ -3,7 +3,6 @@ import logging
 import json
 import os
 import time
-from datetime import datetime
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command
@@ -24,18 +23,18 @@ BOT_USERNAME = os.getenv("BOT_USERNAME", "THE_KINGS_Bot").replace("@", "")  # б
 ADMIN_ID = int(os.getenv("ADMIN_ID", "6013591658"))
 CHANNEL_ID = os.getenv("CHANNEL_ID", "@THEKINGS_BARBERSHOP")
 
-WEBAPP_URL = os.getenv(
-    "WEBAPP_URL",
-    "https://tahirovdd-lang.github.io/TheKINGS/index.html?v=1"
-)
+# ✅ Лучше держать URL в ENV, но по умолчанию ставим самый безопасный вариант:
+# - если GitHub Pages настроен на /web, то URL должен быть .../TheKINGS/
+# - если Pages на root, то можно поставить .../TheKINGS/index.html
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://tahirovdd-lang.github.io/TheKINGS/?v=1")
 
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
-# ====== АНТИ-ДУБЛЬ START (мягкий) ======
+# ====== АНТИ-ДУБЛЬ START (не блокируем, а просто игнорируем спам < 0.6 сек) ======
 _last_start: dict[int, float] = {}
 
-def allow_start(user_id: int, ttl: float = 1.0) -> bool:
+def allow_start(user_id: int, ttl: float = 0.6) -> bool:
     now = time.time()
     prev = _last_start.get(user_id, 0.0)
     if now - prev < ttl:
@@ -70,15 +69,21 @@ def welcome_text() -> str:
 # ====== /start ======
 @dp.message(CommandStart())
 async def start(message: types.Message):
+    # Чтобы бот никогда не "молчал" — если антидубль сработал, просто снова покажем кнопку
     if not allow_start(message.from_user.id):
-        return
+        return await message.answer("👑 Открывайте запись кнопкой ниже:", reply_markup=kb_webapp_reply())
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
 
 @dp.message(Command("startapp"))
 async def startapp(message: types.Message):
     if not allow_start(message.from_user.id):
-        return
+        return await message.answer("👑 Открывайте запись кнопкой ниже:", reply_markup=kb_webapp_reply())
     await message.answer(welcome_text(), reply_markup=kb_webapp_reply())
+
+# ====== Быстрая проверка что бот жив ======
+@dp.message(Command("ping"))
+async def ping(message: types.Message):
+    await message.answer("✅ <b>PONG</b>\nБот работает.", reply_markup=kb_webapp_reply())
 
 # ====== ПОСТ В КАНАЛ ======
 @dp.message(Command("post_booking"))
@@ -163,6 +168,7 @@ async def webapp_data(message: types.Message):
         data = json.loads(raw) if raw else {}
     except Exception:
         data = {}
+
     if not isinstance(data, dict):
         data = {}
 
@@ -182,7 +188,6 @@ async def webapp_data(message: types.Message):
     services = data.get("services") if isinstance(data.get("services"), list) else []
     lines = build_services_lines_from_services(services)
 
-    # ====== АДМИН ======
     admin_text = (
         "👑 <b>НОВАЯ ЗАПИСЬ — THE KINGS Barbershop</b>\n"
         f"🆔 <b>{booking_id}</b>\n\n"
@@ -199,9 +204,11 @@ async def webapp_data(message: types.Message):
     if comment:
         admin_text += f"\n💬 <b>Комментарий:</b> {comment}"
 
-    await bot.send_message(ADMIN_ID, admin_text)
+    try:
+        await bot.send_message(ADMIN_ID, admin_text)
+    except Exception:
+        logging.exception("FAILED TO SEND ADMIN MESSAGE")
 
-    # ====== КЛИЕНТ ======
     client_text = (
         "✅ <b>Запись отправлена!</b>\n"
         "🙏 Спасибо! Мы скоро подтвердим запись.\n\n"
@@ -221,8 +228,11 @@ async def webapp_data(message: types.Message):
 # ====== ЗАПУСК ======
 async def main():
     logging.info("✅ Bot starting…")
-    # ВАЖНО: не съедаем апдейты при перезапуске, иначе /start может пропасть
+    logging.info(f"WEBAPP_URL = {WEBAPP_URL}")
+
+    # ВАЖНО: не съедаем апдейты при перезапуске
     await bot.delete_webhook(drop_pending_updates=False)
+
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
