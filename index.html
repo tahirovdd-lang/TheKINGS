@@ -22,6 +22,7 @@
       --safeL: env(safe-area-inset-left, 0px);
       --safeR: env(safe-area-inset-right, 0px);
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
@@ -32,10 +33,11 @@
       -webkit-text-size-adjust:100%;
       -webkit-tap-highlight-color: transparent;
     }
+
     .wrap{
       max-width:520px;
       margin:0 auto;
-      padding:calc(14px + var(--safeT)) calc(12px + var(--safeL)) calc(82px + var(--safeB)) calc(12px + var(--safeR));
+      padding:calc(14px + var(--safeT)) calc(12px + var(--safeL)) calc(92px + var(--safeB)) calc(12px + var(--safeR));
     }
 
     .top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
@@ -55,18 +57,26 @@
       border-radius:12px;
       padding:10px;
       outline:none;
-      min-height:44px;
+      min-height:48px;          /* ✅ одинаковая высота */
+      height:48px;              /* ✅ фикс для iOS даты */
+      line-height:28px;
+      appearance:none;
+      -webkit-appearance:none;
+      font-size:16px;           /* ✅ iOS не зумит */
     }
-    textarea{resize:none; min-height:64px}
+    textarea{
+      resize:none;
+      min-height:74px;
+      height:auto;
+      line-height:1.35;
+      font-size:15px;
+    }
 
-    /* ✅ фикс перекрытия дата/время + адаптив */
+    /* ✅ одинаковый размер Дата и Время */
     .grid2{
       display:grid;
-      grid-template-columns:1fr;
+      grid-template-columns:1fr 1fr; /* всегда 2 колонки */
       gap:10px;
-    }
-    @media (min-width:420px){
-      .grid2{grid-template-columns:1fr 1fr;}
     }
     .field{min-width:0}
 
@@ -78,7 +88,7 @@
       border:0;
       border-radius:14px;
       padding:12px;
-      min-height:48px;
+      min-height:50px;
       background:linear-gradient(180deg, rgba(212,160,23,.96), rgba(180,130,10,.96));
       font-weight:900;
       cursor:pointer;
@@ -90,6 +100,13 @@
       border:1px solid rgba(212,160,23,.55);
       color:var(--text);
       font-weight:800;
+    }
+    /* ✅ кнопка "Выбрать услуги" должна быть желтой как Confirm */
+    .btn.primaryLike{
+      background:linear-gradient(180deg, rgba(212,160,23,.96), rgba(180,130,10,.96));
+      color:#111;
+      border:0;
+      font-weight:900;
     }
 
     .msg{margin-top:10px;color:var(--muted);font-size:13px;white-space:pre-line}
@@ -149,7 +166,7 @@
       padding:10px 12px calc(12px + var(--safeB));
       transform:translateY(10px);
       animation: sheetUp .16s ease-out forwards;
-      max-height:min(82vh, 680px);
+      max-height:min(82vh, 720px);
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -175,7 +192,7 @@
       min-height:40px;
     }
 
-    /* ✅ услуги 2 в ряд (без эмодзи) */
+    /* ✅ услуги 2 в ряд */
     .svcGrid{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -188,7 +205,7 @@
       background:rgba(0,0,0,.18);
       cursor:pointer;
       user-select:none;
-      min-height:86px;
+      min-height:92px;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
@@ -206,12 +223,13 @@
     .rowBtns{display:flex;gap:10px}
     .rowBtns .btn{flex:1}
 
-    .tag{
-      display:inline-flex;align-items:center;gap:6px;
-      font-size:12px;color:var(--muted);
-      border:1px solid rgba(255,255,255,.10);
-      padding:8px 10px;border-radius:999px;
-      background:rgba(255,255,255,.04);
+    /* ✅ confirm button inside services sheet (sticky) */
+    .sheetFooterSticky{
+      position:sticky;
+      bottom:0;
+      padding-top:10px;
+      background:linear-gradient(180deg, rgba(15,15,17,0), rgba(15,15,17,.85) 30%, rgba(15,15,17,1));
+      margin-top:10px;
     }
 
     /* ====== Floating profile button ====== */
@@ -231,7 +249,7 @@
     .fab:active{transform:translateY(1px)}
     .fab svg{width:24px;height:24px;fill:rgba(212,160,23,.95)}
 
-    /* language segmented */
+    /* language segmented with flags */
     .seg{
       display:flex;
       border:1px solid rgba(255,255,255,.12);
@@ -246,13 +264,18 @@
       color:var(--muted);
       padding:10px 8px;
       cursor:pointer;
-      font-weight:800;
-      min-height:42px;
+      font-weight:900;
+      min-height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
     }
     .seg button.active{
       color:var(--text);
       background:rgba(212,160,23,.14);
     }
+    .flag{font-size:18px; line-height:1}
 
     /* bookings list cards */
     .bcard{
@@ -265,6 +288,15 @@
     .btop{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}
     .btitle{margin-top:6px;font-weight:900}
     .bsub{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.35}
+
+    .hintLine{color:var(--muted);font-size:12px;margin-top:6px}
+
+    /* profile greeting */
+    .hello{
+      font-weight:900;
+      margin:0 0 8px;
+      font-size:16px;
+    }
   </style>
 </head>
 
@@ -282,7 +314,7 @@
       <h2 id="t_booking">Запись</h2>
 
       <label id="t_services">Услуги</label>
-      <button id="btnServices" class="btn secondary" type="button">Выбрать услуги</button>
+      <button id="btnServices" class="btn primaryLike" type="button">Выбрать услуги</button>
       <div class="msg" id="servicesHint">Вы не выбрали услуги</div>
 
       <label id="t_master">Мастер</label>
@@ -354,16 +386,19 @@
         <div class="sheetTitle" id="t_services_pick">Выбор услуг</div>
         <button id="servicesClose" class="xbtn" type="button">Закрыть</button>
       </div>
+
       <div id="servicesGrid" class="svcGrid"></div>
-      <div class="hr"></div>
-      <div class="rowBtns">
-        <button id="servicesClear" class="btn secondary" type="button">Сбросить</button>
-        <button id="servicesDone" class="btn" type="button">Готово</button>
+
+      <!-- ✅ появляется кнопка "Подтвердить" только когда выбраны услуги -->
+      <div class="sheetFooterSticky">
+        <div class="hr"></div>
+        <button id="servicesConfirm" class="btn" type="button" style="display:none">Подтвердить</button>
+        <div id="servicesConfirmHint" class="hintLine" style="display:none"></div>
       </div>
     </div>
   </div>
 
-  <!-- ✅ Profile WINDOW (отдельное окно) -->
+  <!-- Profile window -->
   <div id="profileWindow" class="sheetBackdrop" role="dialog" aria-modal="true">
     <div class="sheet">
       <div class="grab"></div>
@@ -372,25 +407,26 @@
         <button id="profileClose" class="xbtn" type="button">Закрыть</button>
       </div>
 
+      <div class="hello" id="helloLine">Приветствую Вас</div>
       <div class="tag" id="tgTag">Telegram: —</div>
 
       <label id="t_lang" style="margin-top:12px">Язык</label>
       <div class="seg" id="langSeg">
-        <button type="button" data-lang="ru">RU</button>
-        <button type="button" data-lang="uz">UZ</button>
-        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="ru"><span class="flag">🇷🇺</span>RU</button>
+        <button type="button" data-lang="uz"><span class="flag">🇺🇿</span>UZ</button>
+        <button type="button" data-lang="en"><span class="flag">🇬🇧</span>EN</button>
       </div>
 
-      <label id="t_login_phone" style="margin-top:12px">Телефон (для входа)</label>
-      <input id="profilePhone" type="tel" placeholder="+998 __ ___ __ __"/>
+      <div id="profileForm">
+        <label id="t_login_phone" style="margin-top:12px">Телефон (для входа)</label>
+        <input id="profilePhone" type="tel" placeholder="+998 __ ___ __ __"/>
 
-      <label id="t_login_nick">Telegram ник</label>
-      <input id="profileNick" type="text" placeholder="@username"/>
+        <label id="t_login_nick">Telegram ник</label>
+        <input id="profileNick" type="text" placeholder="@username"/>
 
-      <div class="hr"></div>
-
-      <button id="btnSaveProfile" class="btn" type="button">Войти / Сохранить</button>
-      <div class="msg" id="profileMsg"></div>
+        <div class="hr"></div>
+        <button id="btnSaveProfile" class="btn" type="button">Войти / Сохранить</button>
+      </div>
 
       <div class="hr"></div>
 
@@ -411,13 +447,17 @@
   <script>
     const tg = (typeof window !== "undefined") ? window.Telegram?.WebApp : null;
 
+    // ✅ фото мастеров: один файл images.jpg в репозитории
+    // Положи, например:
+    // ./masters/dilshod/images.jpg
+    // ./masters/daler/images.jpg
+    // ./masters/azim/images.jpg
     const MASTERS = [
-      { id: 1, name: "Dilshod", photo: "./masters/dilshod.jpg" },
-      { id: 2, name: "Daler",   photo: "./masters/daler.jpg" },
-      { id: 3, name: "Azim",    photo: "./masters/azim.jpg" },
+      { id: 1, name: "Dilshod", photo: "./masters/dilshod/images.jpg" },
+      { id: 2, name: "Daler",   photo: "./masters/daler/images.jpg" },
+      { id: 3, name: "Azim",    photo: "./masters/azim/images.jpg" },
     ];
 
-    // ✅ заменённый список услуг
     const SERVICES = [
       { id: 1,  key:"men_haircut", name_ru:"Мужская стрижка", name_uz:"Erkaklar soch turmagi", name_en:"Men's haircut", duration:45, price:70000 },
       { id: 2,  key:"kids_haircut", name_ru:"Детская стрижка (до 14лет)", name_uz:"Bolalar soch turmagi (14 yoshgacha)", name_en:"Kids haircut (up to 14)", duration:45, price:50000 },
@@ -439,9 +479,9 @@
 
     const el = (id) => document.getElementById(id);
 
-    const KEY_PROFILE = "tk_profile_v2";
-    const KEY_BOOKINGS = "tk_bookings_v2";
-    const KEY_LANG = "tk_lang_v1";
+    const KEY_PROFILE = "tk_profile_v3";
+    const KEY_BOOKINGS = "tk_bookings_v3";
+    const KEY_LANG = "tk_lang_v2";
 
     function fmtSum(n){
       const x = Number(n) || 0;
@@ -461,136 +501,51 @@
     function loadBookings(){ try { return JSON.parse(localStorage.getItem(KEY_BOOKINGS) || "[]"); } catch { return []; } }
     function saveBookings(arr){ localStorage.setItem(KEY_BOOKINGS, JSON.stringify(arr)); }
 
-    function getLang(){
-      return (localStorage.getItem(KEY_LANG) || "ru").toLowerCase();
-    }
-    function setLang(lang){
-      localStorage.setItem(KEY_LANG, lang);
-    }
+    function getLang(){ return (localStorage.getItem(KEY_LANG) || "ru").toLowerCase(); }
+    function setLang(lang){ localStorage.setItem(KEY_LANG, lang); }
 
     const I18N = {
       ru: {
-        booking:"Запись",
-        services:"Услуги",
-        pickServices:"Выбор услуг",
-        chooseServices:"Выбрать услуги",
-        notChosen:"Вы не выбрали услуги",
-        master:"Мастер",
-        date:"Дата",
-        time:"Время",
-        name:"Имя",
-        phone:"Телефон",
-        comment:"Комментарий",
-        commentPh:"Например: коротко по бокам",
-        duration:"Длительность",
-        min:"мин",
-        total:"Сумма",
-        confirm:"Подтвердить запись",
-        pickServiceFirst:"Выберите услугу (кнопка «Выбрать услуги»).",
-        pickMaster:"Выберите мастера.",
-        pickDate:"Выберите дату.",
-        pickTime:"Выберите время.",
-        enterName:"Введите имя.",
-        promos:"Акции",
-        contacts:"Контакты",
-        close:"Закрыть",
-        clear:"Сбросить",
-        done:"Готово",
-        profile:"Профиль",
-        lang:"Язык",
-        loginPhone:"Телефон (для входа)",
-        tgNick:"Telegram ник",
-        save:"Войти / Сохранить",
-        saved:"✅ Данные сохранены.",
-        enterPhoneOrNick:"Введите телефон или Telegram ник.",
-        myBookings:"Мои записи",
-        upcoming:"Предстоящие",
-        past:"Прошедшие",
-        noneUpcoming:"Предстоящих записей нет.",
-        nonePast:"Прошедших записей нет.",
-        testHint:"✅ (Тест) Откройте через Telegram WebApp чтобы отправить."
+        booking:"Запись", services:"Услуги", pickServices:"Выбор услуг", chooseServices:"Выбрать услуги", notChosen:"Вы не выбрали услуги",
+        master:"Мастер", date:"Дата", time:"Время", name:"Имя", phone:"Телефон", comment:"Комментарий",
+        commentPh:"Например: коротко по бокам", duration:"Длительность", min:"мин", total:"Сумма",
+        confirm:"Подтвердить запись", confirmShort:"Подтвердить",
+        pickServiceFirst:"Выберите услугу (кнопка «Выбрать услуги»).", pickMaster:"Выберите мастера.", pickDate:"Выберите дату.",
+        pickTime:"Выберите время.", enterName:"Введите имя.",
+        promos:"Акции", contacts:"Контакты", close:"Закрыть",
+        profile:"Профиль", lang:"Язык", loginPhone:"Телефон (для входа)", tgNick:"Telegram ник",
+        myBookings:"Мои записи", upcoming:"Предстоящие", past:"Прошедшие",
+        noneUpcoming:"Предстоящих записей нет.", nonePast:"Прошедших записей нет.",
+        testHint:"✅ (Тест) Откройте через Telegram WebApp чтобы отправить.",
+        hello:"Приветствую Вас"
       },
       uz: {
-        booking:"Yozilish",
-        services:"Xizmatlar",
-        pickServices:"Xizmat tanlash",
-        chooseServices:"Xizmatlarni tanlash",
-        notChosen:"Xizmat tanlanmagan",
-        master:"Usta",
-        date:"Sana",
-        time:"Vaqt",
-        name:"Ism",
-        phone:"Telefon",
-        comment:"Izoh",
-        commentPh:"Masalan: yonlari qisqa",
-        duration:"Davomiyligi",
-        min:"daq",
-        total:"Jami",
-        confirm:"Yozilishni tasdiqlash",
-        pickServiceFirst:"Xizmat tanlang (\"Xizmatlarni tanlash\" tugmasi).",
-        pickMaster:"Ustani tanlang.",
-        pickDate:"Sanani tanlang.",
-        pickTime:"Vaqtni tanlang.",
-        enterName:"Ism kiriting.",
-        promos:"Aksiyalar",
-        contacts:"Kontaktlar",
-        close:"Yopish",
-        clear:"Tozalash",
-        done:"Tayyor",
-        profile:"Profil",
-        lang:"Til",
-        loginPhone:"Telefon (kirish uchun)",
-        tgNick:"Telegram nik",
-        save:"Kirish / Saqlash",
-        saved:"✅ Ma'lumotlar saqlandi.",
-        enterPhoneOrNick:"Telefon yoki Telegram nik kiriting.",
-        myBookings:"Mening yozilishlarim",
-        upcoming:"Kelajakdagi",
-        past:"O‘tgan",
-        noneUpcoming:"Kelajakdagi yozilish yo‘q.",
-        nonePast:"O‘tgan yozilish yo‘q.",
-        testHint:"✅ (Test) Telegram WebApp orqali oching."
+        booking:"Yozilish", services:"Xizmatlar", pickServices:"Xizmat tanlash", chooseServices:"Xizmatlarni tanlash", notChosen:"Xizmat tanlanmagan",
+        master:"Usta", date:"Sana", time:"Vaqt", name:"Ism", phone:"Telefon", comment:"Izoh",
+        commentPh:"Masalan: yonlari qisqa", duration:"Davomiyligi", min:"daq", total:"Jami",
+        confirm:"Yozilishni tasdiqlash", confirmShort:"Tasdiqlash",
+        pickServiceFirst:"Xizmat tanlang (\"Xizmatlarni tanlash\" tugmasi).", pickMaster:"Ustani tanlang.", pickDate:"Sanani tanlang.",
+        pickTime:"Vaqtni tanlang.", enterName:"Ism kiriting.",
+        promos:"Aksiyalar", contacts:"Kontaktlar", close:"Yopish",
+        profile:"Profil", lang:"Til", loginPhone:"Telefon (kirish uchun)", tgNick:"Telegram nik",
+        myBookings:"Mening yozilishlarim", upcoming:"Kelajakdagi", past:"O‘tgan",
+        noneUpcoming:"Kelajakdagi yozilish yo‘q.", nonePast:"O‘tgan yozilish yo‘q.",
+        testHint:"✅ (Test) Telegram WebApp orqali oching.",
+        hello:"Xush kelibsiz"
       },
       en: {
-        booking:"Booking",
-        services:"Services",
-        pickServices:"Pick services",
-        chooseServices:"Choose services",
-        notChosen:"No services selected",
-        master:"Master",
-        date:"Date",
-        time:"Time",
-        name:"Name",
-        phone:"Phone",
-        comment:"Comment",
-        commentPh:"For example: short on sides",
-        duration:"Duration",
-        min:"min",
-        total:"Total",
-        confirm:"Confirm booking",
-        pickServiceFirst:"Choose a service (\"Choose services\" button).",
-        pickMaster:"Choose a master.",
-        pickDate:"Choose a date.",
-        pickTime:"Choose time.",
-        enterName:"Enter your name.",
-        promos:"Promotions",
-        contacts:"Contacts",
-        close:"Close",
-        clear:"Clear",
-        done:"Done",
-        profile:"Profile",
-        lang:"Language",
-        loginPhone:"Phone (login)",
-        tgNick:"Telegram username",
-        save:"Login / Save",
-        saved:"✅ Saved.",
-        enterPhoneOrNick:"Enter phone or Telegram username.",
-        myBookings:"My bookings",
-        upcoming:"Upcoming",
-        past:"Past",
-        noneUpcoming:"No upcoming bookings.",
-        nonePast:"No past bookings.",
-        testHint:"✅ (Test) Open via Telegram WebApp to send."
+        booking:"Booking", services:"Services", pickServices:"Pick services", chooseServices:"Choose services", notChosen:"No services selected",
+        master:"Master", date:"Date", time:"Time", name:"Name", phone:"Phone", comment:"Comment",
+        commentPh:"For example: short on sides", duration:"Duration", min:"min", total:"Total",
+        confirm:"Confirm booking", confirmShort:"Confirm",
+        pickServiceFirst:"Choose a service (\"Choose services\" button).", pickMaster:"Choose a master.", pickDate:"Choose a date.",
+        pickTime:"Choose time.", enterName:"Enter your name.",
+        promos:"Promotions", contacts:"Contacts", close:"Close",
+        profile:"Profile", lang:"Language", loginPhone:"Phone (login)", tgNick:"Telegram username",
+        myBookings:"My bookings", upcoming:"Upcoming", past:"Past",
+        noneUpcoming:"No upcoming bookings.", nonePast:"No past bookings.",
+        testHint:"✅ (Test) Open via Telegram WebApp to send.",
+        hello:"Welcome"
       }
     };
 
@@ -601,15 +556,12 @@
     }
 
     function parseBookingDateTimeISO(dateStr, timeStr){
-      // date: YYYY-MM-DD, time: HH:MM
       const [y,m,d] = dateStr.split("-").map(Number);
       const [hh,mm] = timeStr.split(":").map(Number);
-      // Local time
       return new Date(y, (m-1), d, hh, mm, 0, 0).getTime();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // elements
       const mastersRow = el("mastersRow");
 
       const btnServices = el("btnServices");
@@ -617,8 +569,8 @@
       const servicesBackdrop = el("servicesBackdrop");
       const servicesClose = el("servicesClose");
       const servicesGrid = el("servicesGrid");
-      const servicesClear = el("servicesClear");
-      const servicesDone = el("servicesDone");
+      const servicesConfirm = el("servicesConfirm");
+      const servicesConfirmHint = el("servicesConfirmHint");
 
       const dateEl = el("date");
       const timeEl = el("time");
@@ -634,39 +586,37 @@
       const fabProfile = el("fabProfile");
       const profileWindow = el("profileWindow");
       const profileClose = el("profileClose");
+      const helloLine = el("helloLine");
+      const profileForm = el("profileForm");
       const profilePhone = el("profilePhone");
       const profileNick = el("profileNick");
       const btnSaveProfile = el("btnSaveProfile");
-      const profileMsg = el("profileMsg");
       const btnMyBookings = el("btnMyBookings");
       const upcomingList = el("upcomingList");
       const pastList = el("pastList");
       const tgTag = el("tgTag");
       const langSeg = el("langSeg");
 
-      // i18n targets
-      const t = {
-        booking: el("t_booking"),
-        services: el("t_services"),
-        master: el("t_master"),
-        date: el("t_date"),
-        time: el("t_time"),
-        name: el("t_name"),
-        phone: el("t_phone"),
-        comment: el("t_comment"),
-        duration: el("t_duration"),
-        min: el("t_min"),
-        total: el("t_total"),
-        promos: el("t_promos"),
-        contacts: el("t_contacts"),
-        servicesPick: el("t_services_pick"),
-        upcomingTag: el("t_upcoming_tag"),
-        pastTag: el("t_past_tag"),
-        profile: el("t_profile"),
-        lang: el("t_lang"),
-        loginPhone: el("t_login_phone"),
-        loginNick: el("t_login_nick"),
-      };
+      const t_booking = el("t_booking");
+      const t_services = el("t_services");
+      const t_master = el("t_master");
+      const t_date = el("t_date");
+      const t_time = el("t_time");
+      const t_name = el("t_name");
+      const t_phone = el("t_phone");
+      const t_comment = el("t_comment");
+      const t_duration = el("t_duration");
+      const t_min = el("t_min");
+      const t_total = el("t_total");
+      const t_promos = el("t_promos");
+      const t_contacts = el("t_contacts");
+      const t_services_pick = el("t_services_pick");
+      const t_profile = el("t_profile");
+      const t_lang = el("t_lang");
+      const t_login_phone = el("t_login_phone");
+      const t_login_nick = el("t_login_nick");
+      const t_upcoming_tag = el("t_upcoming_tag");
+      const t_past_tag = el("t_past_tag");
 
       if (tg) {
         tg.ready();
@@ -680,57 +630,78 @@
 
       function setMsg(t){ msgEl.textContent = t || ""; }
 
-      function getStrings(){
-        const lang = getLang();
-        return I18N[lang] || I18N.ru;
+      function loadOrInitLang(){
+        const prof = loadProfile();
+        if (prof?.lang && ["ru","uz","en"].includes(prof.lang)) setLang(prof.lang);
       }
 
-      function applyLang(){
-        const s = getStrings();
-        t.booking.textContent = s.booking;
-        t.services.textContent = s.services;
-        t.master.textContent = s.master;
-        t.date.textContent = s.date;
-        t.time.textContent = s.time;
-        t.name.textContent = s.name;
-        t.phone.textContent = s.phone;
-        t.comment.textContent = s.comment;
-        t.duration.textContent = s.duration;
-        t.min.textContent = s.min;
-        t.total.textContent = s.total;
-        t.promos.textContent = s.promos;
-        t.contacts.textContent = s.contacts;
+      function strings(){ return I18N[getLang()] || I18N.ru; }
 
-        t.servicesPick.textContent = s.pickServices;
-        btnServices.textContent = s.chooseServices;
+      function applyLang(){
+        const s = strings();
+
+        t_booking.textContent = s.booking;
+        t_services.textContent = s.services;
+        t_master.textContent = s.master;
+        t_date.textContent = s.date;
+        t_time.textContent = s.time;
+        t_name.textContent = s.name;
+        t_phone.textContent = s.phone;
+        t_comment.textContent = s.comment;
 
         commentEl.placeholder = s.commentPh;
 
-        servicesClose.textContent = s.close;
-        servicesClear.textContent = s.clear;
-        servicesDone.textContent = s.done;
+        t_duration.textContent = s.duration;
+        t_min.textContent = s.min;
+        t_total.textContent = s.total;
 
-        t.profile.textContent = s.profile;
-        profileClose.textContent = s.close;
-        t.lang.textContent = s.lang;
-        t.loginPhone.textContent = s.loginPhone;
-        t.loginNick.textContent = s.tgNick;
-        btnSaveProfile.textContent = s.save;
-        btnMyBookings.textContent = s.myBookings;
-        t.upcomingTag.textContent = s.upcoming;
-        t.pastTag.textContent = s.past;
+        btnServices.textContent = s.chooseServices;
+        t_services_pick.textContent = s.pickServices;
+        servicesClose.textContent = s.close;
 
         btnSend.textContent = s.confirm;
 
-        // segmented active
-        [...langSeg.querySelectorAll("button")].forEach(b => {
+        t_promos.textContent = s.promos;
+        t_contacts.textContent = s.contacts;
+
+        t_profile.textContent = s.profile;
+        profileClose.textContent = s.close;
+        t_lang.textContent = s.lang;
+        t_login_phone.textContent = s.loginPhone;
+        t_login_nick.textContent = s.tgNick;
+
+        btnMyBookings.textContent = s.myBookings;
+        t_upcoming_tag.textContent = s.upcoming;
+        t_past_tag.textContent = s.past;
+
+        servicesConfirm.textContent = s.confirmShort;
+
+        // flags segmented active
+        [...langSeg.querySelectorAll("button[data-lang]")].forEach(b=>{
           b.classList.toggle("active", b.dataset.lang === getLang());
         });
 
-        // re-render services names + hint + lists
+        // greeting in profile
+        updateHello();
+
         renderServicesSheet();
         calc();
         renderBookings();
+      }
+
+      function updateHello(){
+        const s = strings();
+        const prof = loadProfile();
+        const clientName = (prof?.name || "").trim();
+        helloLine.textContent = clientName ? `${s.hello} (${clientName})` : s.hello;
+      }
+
+      function fillTelegramNickDefault(){
+        const u = tg?.initDataUnsafe?.user;
+        const nick = u?.username ? ("@" + u.username) : "";
+        const shown = u?.username ? ("@" + u.username) : "—";
+        tgTag.textContent = "Telegram: " + shown;
+        return { nickFromTG: nick, firstNameTG: u?.first_name || "" };
       }
 
       function calc(){
@@ -739,16 +710,16 @@
         const lang = getLang();
 
         for (const id of selectedServices) {
-          const s = SERVICES.find(x => x.id === id);
-          if (!s) continue;
-          total += s.price;
-          dur += s.duration;
+          const svc = SERVICES.find(x => x.id === id);
+          if (!svc) continue;
+          total += svc.price;
+          dur += svc.duration;
           chosen.push({
-            id: s.id,
-            key: s.key,
-            name: svcNameByLang(s, lang),
-            price: s.price,
-            duration: s.duration,
+            id: svc.id,
+            key: svc.key,
+            name: svcNameByLang(svc, lang),
+            price: svc.price,
+            duration: svc.duration,
             qty: 1
           });
         }
@@ -756,9 +727,19 @@
         durEl.textContent = dur ? String(dur) : "—";
         sumEl.textContent = total ? `${fmtSum(total)} so'm` : "—";
 
-        const str = getStrings();
-        if (!chosen.length) servicesHint.textContent = str.notChosen;
-        else servicesHint.textContent = chosen.map(x => x.name).join(" • ");
+        const s = strings();
+        servicesHint.textContent = chosen.length ? chosen.map(x=>x.name).join(" • ") : s.notChosen;
+
+        // ✅ services confirm button visible only when chosen
+        if (chosen.length){
+          servicesConfirm.style.display = "";
+          servicesConfirmHint.style.display = "";
+          servicesConfirmHint.textContent = `${fmtSum(total)} so'm • ${dur} ${s.min}`;
+        } else {
+          servicesConfirm.style.display = "none";
+          servicesConfirmHint.style.display = "none";
+          servicesConfirmHint.textContent = "";
+        }
 
         return { total, dur, chosen };
       }
@@ -776,23 +757,23 @@
         }
       }
 
-      // ✅ услуги: 2 в ряд + без эмодзи
       function renderServicesSheet(){
         servicesGrid.innerHTML = "";
         const lang = getLang();
-        SERVICES.forEach(s => {
+
+        SERVICES.forEach(svc => {
           const d = document.createElement("div");
-          d.className = "svcCard" + (selectedServices.has(s.id) ? " active" : "");
+          d.className = "svcCard" + (selectedServices.has(svc.id) ? " active" : "");
           d.innerHTML = `
-            <div class="svcName">${svcNameByLang(s, lang)}</div>
+            <div class="svcName">${svcNameByLang(svc, lang)}</div>
             <div class="svcSub">
-              <span>${fmtSum(s.price)} so'm</span>
-              <span>${s.duration} ${getStrings().min}</span>
+              <span>${fmtSum(svc.price)} so'm</span>
+              <span>${svc.duration} ${strings().min}</span>
             </div>
           `;
           d.onclick = () => {
-            if (selectedServices.has(s.id)) selectedServices.delete(s.id);
-            else selectedServices.add(s.id);
+            if (selectedServices.has(svc.id)) selectedServices.delete(svc.id);
+            else selectedServices.add(svc.id);
             renderServicesSheet();
             calc();
           };
@@ -800,14 +781,15 @@
         });
       }
 
-      btnServices.onclick = () => { renderServicesSheet(); sheetOpen(servicesBackdrop); };
+      btnServices.onclick = () => { renderServicesSheet(); calc(); sheetOpen(servicesBackdrop); };
       servicesClose.onclick = () => sheetClose(servicesBackdrop);
       servicesBackdrop.addEventListener("click", (e) => { if (e.target === servicesBackdrop) sheetClose(servicesBackdrop); });
 
-      servicesClear.onclick = () => { selectedServices = new Set(); renderServicesSheet(); calc(); };
-      servicesDone.onclick = () => sheetClose(servicesBackdrop);
+      servicesConfirm.onclick = () => {
+        // just close and keep selection
+        sheetClose(servicesBackdrop);
+      };
 
-      // ✅ мастера: иконки с фото в ряд
       function renderMasters(){
         mastersRow.innerHTML = "";
         MASTERS.forEach(m => {
@@ -819,11 +801,7 @@
             <div class="mname">${m.name}</div>
             <div class="msub">мастер</div>
           `;
-          c.onclick = () => {
-            selectedMasterId = m.id;
-            renderMasters();
-            setMsg("");
-          };
+          c.onclick = () => { selectedMasterId = m.id; renderMasters(); setMsg(""); };
           mastersRow.appendChild(c);
         });
       }
@@ -837,65 +815,81 @@
         promosEl.appendChild(d);
       });
 
-      // Telegram tag
-      function fillTelegramTag(){
-        const u = tg?.initDataUnsafe?.user;
-        const nick = u?.username ? ("@" + u.username) : "—";
-        tgTag.textContent = "Telegram: " + nick;
-      }
-      fillTelegramTag();
-
-      // ✅ language buttons
+      // language buttons
       langSeg.addEventListener("click", (e) => {
         const btn = e.target.closest("button[data-lang]");
         if (!btn) return;
         setLang(btn.dataset.lang);
-        // also store inside profile for convenience
+
         const prof = loadProfile() || {};
         prof.lang = getLang();
         saveProfile(prof);
+
         applyLang();
       });
 
-      // ✅ Profile window open/close (другое окно)
       function openProfile(){
         const prof = loadProfile();
-        const u = tg?.initDataUnsafe?.user;
+        const { nickFromTG, firstNameTG } = fillTelegramNickDefault();
 
+        // Prefill & remember name from main form if already typed
+        const nameMain = (el("name").value || "").trim();
+        const finalName = (prof?.name || nameMain || firstNameTG || "").trim();
+
+        // Fill form values
         profilePhone.value = prof?.phone || "";
-        profileNick.value = prof?.nick || (u?.username ? ("@" + u.username) : "");
-        profileMsg.textContent = (prof?.phone || prof?.nick) ? getStrings().saved : getStrings().enterPhoneOrNick;
-
-        // if profile has saved lang -> apply
-        if (prof?.lang && (prof.lang === "ru" || prof.lang === "uz" || prof.lang === "en")) {
-          setLang(prof.lang);
+        profileNick.value = prof?.nick || nickFromTG || "";
+        if (finalName && !prof?.name){
+          // save name silently
+          const p2 = { ...(prof||{}), name: finalName };
+          saveProfile(p2);
         }
+
+        // ✅ hide save button + form if already saved fully
+        const isSaved = !!(prof?.phone || prof?.nick || finalName);
+        if (isSaved){
+          profileForm.style.display = "none";
+        } else {
+          profileForm.style.display = "";
+        }
+
+        updateHello();
         applyLang();
         renderBookings();
+
         sheetOpen(profileWindow);
       }
 
-      fabProfile.onclick = openProfile;
       profileClose.onclick = () => sheetClose(profileWindow);
       profileWindow.addEventListener("click", (e) => { if (e.target === profileWindow) sheetClose(profileWindow); });
 
+      fabProfile.onclick = openProfile;
+
+      // ✅ when saving profile: remember phone, nick from TG, name; then hide button & NO "data saved" message
       btnSaveProfile.onclick = () => {
+        const prof = loadProfile() || {};
+        const { nickFromTG, firstNameTG } = fillTelegramNickDefault();
+
         const phone = normalizePhone(profilePhone.value);
-        const nick = (profileNick.value || "").trim();
-        if (!phone && !nick){
-          profileMsg.textContent = getStrings().enterPhoneOrNick;
-          return;
-        }
+        const nick = (nickFromTG || profileNick.value || "").trim();
+        const nameMain = (el("name").value || "").trim();
+        const nameFinal = (prof.name || nameMain || firstNameTG || "").trim();
+
+        // save
         saveProfile({
-          phone,
-          nick,
+          ...prof,
+          phone: phone || prof.phone || "",
+          nick: nick || prof.nick || "",
+          name: nameFinal || prof.name || "",
           lang: getLang(),
           updated_at: Date.now()
         });
-        profileMsg.textContent = getStrings().saved;
+
+        // hide save UI + no saved msg
+        profileForm.style.display = "none";
+        updateHello();
       };
 
-      // ✅ мои записи: предстоящие / прошедшие, запоминаем
       function bookingCardHTML(x){
         const svc = (x.services || []).map(s => s.name).join(", ");
         return `
@@ -911,7 +905,7 @@
       }
 
       function renderBookings(){
-        const str = getStrings();
+        const s = strings();
         const list = loadBookings();
         const now = Date.now();
 
@@ -921,8 +915,6 @@
             : (b.date && b.time ? parseBookingDateTimeISO(b.date, b.time) : 0);
           return { ...b, datetime_ts: ts };
         });
-
-        // persist back if missing ts
         saveBookings(withTs);
 
         const upcoming = withTs
@@ -933,42 +925,60 @@
           .filter(b => (b.datetime_ts || 0) < (now - 5*60*1000))
           .sort((a,b)=> (b.datetime_ts||0) - (a.datetime_ts||0));
 
-        upcomingList.innerHTML = upcoming.length ? upcoming.map(bookingCardHTML).join("") : `<div class="msg">${str.noneUpcoming}</div>`;
-        pastList.innerHTML = past.length ? past.map(bookingCardHTML).join("") : `<div class="msg">${str.nonePast}</div>`;
+        upcomingList.innerHTML = upcoming.length ? upcoming.map(bookingCardHTML).join("") : `<div class="msg">${s.noneUpcoming}</div>`;
+        pastList.innerHTML = past.length ? past.map(bookingCardHTML).join("") : `<div class="msg">${s.nonePast}</div>`;
       }
 
       btnMyBookings.onclick = renderBookings;
 
-      // init defaults
-      // saved language first
-      const prof0 = loadProfile();
-      if (prof0?.lang) setLang(prof0.lang);
+      // init
+      loadOrInitLang();
 
       dateEl.value = todayISO();
       buildTimes();
       renderMasters();
-      applyLang();
 
+      // Prefill from telegram
       const u = tg?.initDataUnsafe?.user;
       if (u?.first_name && !nameEl.value) nameEl.value = u.first_name;
 
+      // store name to profile silently (so greeting works)
+      const profInit = loadProfile() || {};
+      if (!profInit.name && nameEl.value.trim()){
+        saveProfile({ ...profInit, name: nameEl.value.trim() });
+      }
+
+      // update greeting on typing name
+      nameEl.addEventListener("input", () => {
+        const prof = loadProfile() || {};
+        saveProfile({ ...prof, name: nameEl.value.trim() });
+        updateHello();
+      });
+
+      fillTelegramNickDefault();
+      applyLang();
+      calc();
+
       // send booking
       btnSend.onclick = () => {
-        const str = getStrings();
+        const s = strings();
         const { total, dur, chosen } = calc();
 
-        if (!chosen.length) return setMsg(str.pickServiceFirst);
-        if (!selectedMasterId) return setMsg(str.pickMaster);
-        if (!dateEl.value) return setMsg(str.pickDate);
-        if (!timeEl.value) return setMsg(str.pickTime);
-        if (!nameEl.value.trim()) return setMsg(str.enterName);
+        if (!chosen.length) return setMsg(s.pickServiceFirst);
+        if (!selectedMasterId) return setMsg(s.pickMaster);
+        if (!dateEl.value) return setMsg(s.pickDate);
+        if (!timeEl.value) return setMsg(s.pickTime);
+        if (!nameEl.value.trim()) return setMsg(s.enterName);
 
         const masterName = (MASTERS.find(m => m.id === selectedMasterId)?.name) || "—";
+
+        const prof = loadProfile() || {};
+        const { nickFromTG } = fillTelegramNickDefault();
 
         const payload = {
           booking_id: "BK-" + Date.now(),
           client_name: nameEl.value.trim(),
-          phone: normalizePhone(phoneEl.value),
+          phone: normalizePhone(phoneEl.value) || prof.phone || "",
           comment: commentEl.value.trim(),
           master_id: selectedMasterId,
           master_name: masterName,
@@ -980,6 +990,10 @@
           client_ts: Date.now(),
           lang: getLang(),
           datetime_ts: parseBookingDateTimeISO(dateEl.value, timeEl.value),
+
+          // profile extras
+          profile_name: prof.name || nameEl.value.trim(),
+          profile_nick: prof.nick || nickFromTG || "",
         };
 
         // save locally
@@ -992,7 +1006,7 @@
           tg.close();
         } else {
           console.log("Payload:", payload);
-          setMsg(str.testHint);
+          setMsg(s.testHint);
         }
       };
     });
