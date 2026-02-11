@@ -16,6 +16,7 @@
       --muted:rgba(255,255,255,.72);
       --gold:#d4a017;
       --gold2:#b4820a;
+
       --safeB: env(safe-area-inset-bottom, 0px);
       --safeT: env(safe-area-inset-top, 0px);
       --safeL: env(safe-area-inset-left, 0px);
@@ -34,12 +35,14 @@
     .wrap{
       max-width:520px;
       margin:0 auto;
-      padding:calc(14px + var(--safeT)) calc(12px + var(--safeL)) calc(76px + var(--safeB)) calc(12px + var(--safeR));
+      padding:calc(14px + var(--safeT)) calc(12px + var(--safeL)) calc(82px + var(--safeB)) calc(12px + var(--safeR));
     }
+
     .top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
     .logo{width:56px;height:56px;border-radius:16px;object-fit:cover;border:1px solid var(--stroke)}
     h1{margin:0;font-size:22px}
     p{margin:2px 0 0;color:var(--muted);font-weight:700;letter-spacing:2px}
+
     .card{border:1px solid var(--stroke);border-radius:18px;padding:14px;margin:12px 0;background:var(--surface)}
     h2{margin:0 0 12px;font-size:16px}
     label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
@@ -52,11 +55,11 @@
       border-radius:12px;
       padding:10px;
       outline:none;
-      min-height:44px; /* iOS */
+      min-height:44px;
     }
     textarea{resize:none; min-height:64px}
 
-    /* ✅ фикс перекрытия дата/время на мобилках: авто-колонки и min-width */
+    /* ✅ фикс перекрытия дата/время + адаптив */
     .grid2{
       display:grid;
       grid-template-columns:1fr;
@@ -67,15 +70,20 @@
     }
     .field{min-width:0}
 
-    .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .chip{border:1px solid var(--stroke);border-radius:14px;padding:10px;background:rgba(0,0,0,.18);cursor:pointer;user-select:none}
-    .chip-sub{color:rgba(255,255,255,.72);font-size:12px;margin-top:4px}
-    .chip.active{border-color:rgba(212,160,23,.7);box-shadow:0 0 0 2px rgba(212,160,23,.18) inset}
-
     .summary{display:flex;justify-content:space-between;color:var(--muted);margin:12px 0;gap:10px}
     .summary > div{min-width:0}
 
-    .btn{width:100%;border:0;border-radius:14px;padding:12px;min-height:48px;background:linear-gradient(180deg, rgba(212,160,23,.96), rgba(180,130,10,.96));font-weight:900;cursor:pointer;color:#111}
+    .btn{
+      width:100%;
+      border:0;
+      border-radius:14px;
+      padding:12px;
+      min-height:48px;
+      background:linear-gradient(180deg, rgba(212,160,23,.96), rgba(180,130,10,.96));
+      font-weight:900;
+      cursor:pointer;
+      color:#111;
+    }
     .btn:active{transform:translateY(1px)}
     .btn.secondary{
       background:transparent;
@@ -84,11 +92,11 @@
       font-weight:800;
     }
 
-    .msg{margin-top:10px;color:var(--muted);font-size:13px}
+    .msg{margin-top:10px;color:var(--muted);font-size:13px;white-space:pre-line}
     .promo{border:1px dashed rgba(212,160,23,.35);border-radius:14px;padding:10px;margin:8px 0;background:rgba(212,160,23,.06)}
     .contacts{color:var(--muted);line-height:1.35}
 
-    /* ====== Masters row (иконки в ряд) ====== */
+    /* ====== Masters row ====== */
     .mastersRow{
       display:flex;
       gap:10px;
@@ -131,6 +139,7 @@
       padding:0;
     }
     .sheetBackdrop.show{display:block}
+
     .sheet{
       position:absolute;
       left:0; right:0; bottom:0;
@@ -140,11 +149,12 @@
       padding:10px 12px calc(12px + var(--safeB));
       transform:translateY(10px);
       animation: sheetUp .16s ease-out forwards;
-      max-height:min(78vh, 620px);
+      max-height:min(82vh, 680px);
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
     @keyframes sheetUp{to{transform:translateY(0)}}
+
     .sheetHeader{
       display:flex; align-items:center; justify-content:space-between;
       padding:6px 2px 10px;
@@ -165,13 +175,11 @@
       min-height:40px;
     }
 
+    /* ✅ услуги 2 в ряд (без эмодзи) */
     .svcGrid{
       display:grid;
-      grid-template-columns:1fr;
+      grid-template-columns:1fr 1fr;
       gap:10px;
-    }
-    @media (min-width:420px){
-      .svcGrid{grid-template-columns:1fr 1fr;}
     }
     .svcCard{
       border:1px solid var(--stroke);
@@ -180,26 +188,31 @@
       background:rgba(0,0,0,.18);
       cursor:pointer;
       user-select:none;
+      min-height:86px;
       display:flex;
-      gap:10px;
-      align-items:center;
-      min-height:64px;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:8px;
     }
     .svcCard.active{
       border-color:rgba(212,160,23,.7);
       box-shadow:0 0 0 2px rgba(212,160,23,.18) inset;
     }
-    .svcIcon{
-      width:42px;height:42px;border-radius:14px;
+    .svcName{font-weight:900; line-height:1.2}
+    .svcSub{font-size:12px;color:var(--muted); display:flex; justify-content:space-between; gap:8px}
+    .svcSub span{white-space:nowrap}
+
+    .hr{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
+    .rowBtns{display:flex;gap:10px}
+    .rowBtns .btn{flex:1}
+
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:12px;color:var(--muted);
       border:1px solid rgba(255,255,255,.10);
-      background:rgba(212,160,23,.10);
-      display:flex;align-items:center;justify-content:center;
-      font-size:20px;
-      flex:0 0 auto;
+      padding:8px 10px;border-radius:999px;
+      background:rgba(255,255,255,.04);
     }
-    .svcMeta{min-width:0}
-    .svcName{font-weight:900}
-    .svcSub{font-size:12px;color:var(--muted);margin-top:3px}
 
     /* ====== Floating profile button ====== */
     .fab{
@@ -217,22 +230,41 @@
     }
     .fab:active{transform:translateY(1px)}
     .fab svg{width:24px;height:24px;fill:rgba(212,160,23,.95)}
-    .hint{
-      font-size:12px;color:var(--muted);
-      margin-top:6px;
-    }
 
-    /* small helpers */
-    .hr{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
-    .rowBtns{display:flex;gap:10px}
-    .rowBtns .btn{flex:1}
-    .tag{
-      display:inline-flex;align-items:center;gap:6px;
-      font-size:12px;color:var(--muted);
-      border:1px solid rgba(255,255,255,.10);
-      padding:8px 10px;border-radius:999px;
+    /* language segmented */
+    .seg{
+      display:flex;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      overflow:hidden;
       background:rgba(255,255,255,.04);
     }
+    .seg button{
+      flex:1;
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      padding:10px 8px;
+      cursor:pointer;
+      font-weight:800;
+      min-height:42px;
+    }
+    .seg button.active{
+      color:var(--text);
+      background:rgba(212,160,23,.14);
+    }
+
+    /* bookings list cards */
+    .bcard{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      border-radius:14px;
+      padding:10px;
+      margin:8px 0;
+    }
+    .btop{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}
+    .btitle{margin-top:6px;font-weight:900}
+    .bsub{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.35}
   </style>
 </head>
 
@@ -247,45 +279,43 @@
     </header>
 
     <div class="card">
-      <h2>Запись</h2>
+      <h2 id="t_booking">Запись</h2>
 
-      <!-- ✅ Услуги: кнопка открывает окно снизу -->
-      <label>Услуги</label>
+      <label id="t_services">Услуги</label>
       <button id="btnServices" class="btn secondary" type="button">Выбрать услуги</button>
-      <div class="hint" id="servicesHint">Вы не выбрали услуги</div>
+      <div class="msg" id="servicesHint">Вы не выбрали услуги</div>
 
-      <!-- ✅ Мастера: иконки с фото в ряд -->
-      <label>Мастер</label>
+      <label id="t_master">Мастер</label>
       <div id="mastersRow" class="mastersRow"></div>
 
       <div class="grid2">
         <div class="field">
-          <label>Дата</label>
+          <label id="t_date">Дата</label>
           <input id="date" type="date"/>
         </div>
         <div class="field">
-          <label>Время</label>
+          <label id="t_time">Время</label>
           <select id="time"></select>
         </div>
       </div>
 
       <div class="grid2">
         <div class="field">
-          <label>Имя</label>
+          <label id="t_name">Имя</label>
           <input id="name" type="text" placeholder="Ваше имя"/>
         </div>
         <div class="field">
-          <label>Телефон</label>
+          <label id="t_phone">Телефон</label>
           <input id="phone" type="tel" placeholder="+998 __ ___ __ __"/>
         </div>
       </div>
 
-      <label>Комментарий</label>
+      <label id="t_comment">Комментарий</label>
       <textarea id="comment" rows="2" placeholder="Например: коротко по бокам"></textarea>
 
       <div class="summary">
-        <div>Длительность: <b id="dur">—</b> мин</div>
-        <div>Сумма: <b id="sum">—</b></div>
+        <div><span id="t_duration">Длительность</span>: <b id="dur">—</b> <span id="t_min">мин</span></div>
+        <div><span id="t_total">Сумма</span>: <b id="sum">—</b></div>
       </div>
 
       <button id="btnSend" class="btn" type="button">Подтвердить запись</button>
@@ -293,13 +323,13 @@
     </div>
 
     <div class="card">
-      <h2>Акции</h2>
+      <h2 id="t_promos">Акции</h2>
       <div id="promos"></div>
     </div>
 
     <div class="card">
-      <h2>Контакты</h2>
-      <div class="contacts">
+      <h2 id="t_contacts">Контакты</h2>
+      <div class="contacts" id="contactsBox">
         <div><b>THE KINGS BARBERSHOP</b></div>
         <div>📍 г. Самарканд, Улица Узбекистанская, 84</div>
         <div>🕘 09:00-22:00</div>
@@ -321,7 +351,7 @@
     <div class="sheet">
       <div class="grab"></div>
       <div class="sheetHeader">
-        <div class="sheetTitle">Выбор услуг</div>
+        <div class="sheetTitle" id="t_services_pick">Выбор услуг</div>
         <button id="servicesClose" class="xbtn" type="button">Закрыть</button>
       </div>
       <div id="servicesGrid" class="svcGrid"></div>
@@ -333,21 +363,28 @@
     </div>
   </div>
 
-  <!-- Profile bottom sheet -->
-  <div id="profileBackdrop" class="sheetBackdrop" role="dialog" aria-modal="true">
+  <!-- ✅ Profile WINDOW (отдельное окно) -->
+  <div id="profileWindow" class="sheetBackdrop" role="dialog" aria-modal="true">
     <div class="sheet">
       <div class="grab"></div>
       <div class="sheetHeader">
-        <div class="sheetTitle">Профиль</div>
+        <div class="sheetTitle" id="t_profile">Профиль</div>
         <button id="profileClose" class="xbtn" type="button">Закрыть</button>
       </div>
 
       <div class="tag" id="tgTag">Telegram: —</div>
 
-      <label style="margin-top:12px">Телефон (для входа)</label>
+      <label id="t_lang" style="margin-top:12px">Язык</label>
+      <div class="seg" id="langSeg">
+        <button type="button" data-lang="ru">RU</button>
+        <button type="button" data-lang="uz">UZ</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+
+      <label id="t_login_phone" style="margin-top:12px">Телефон (для входа)</label>
       <input id="profilePhone" type="tel" placeholder="+998 __ ___ __ __"/>
 
-      <label>Telegram ник (если нет — впишите вручную)</label>
+      <label id="t_login_nick">Telegram ник</label>
       <input id="profileNick" type="text" placeholder="@username"/>
 
       <div class="hr"></div>
@@ -358,25 +395,41 @@
       <div class="hr"></div>
 
       <button id="btnMyBookings" class="btn secondary" type="button">Мои записи</button>
-      <div id="myBookings" class="msg"></div>
+
+      <div class="hr"></div>
+
+      <div class="tag" id="t_upcoming_tag">Предстоящие</div>
+      <div id="upcomingList"></div>
+
+      <div class="hr"></div>
+
+      <div class="tag" id="t_past_tag">Прошедшие</div>
+      <div id="pastList"></div>
     </div>
   </div>
 
   <script>
     const tg = (typeof window !== "undefined") ? window.Telegram?.WebApp : null;
 
-    // ✅ мастера (изменены имена)
     const MASTERS = [
-      { id: 1, name: "Dilshod", photo: "./masters/dilshod.jpg" }, // позже заменишь фото
+      { id: 1, name: "Dilshod", photo: "./masters/dilshod.jpg" },
       { id: 2, name: "Daler",   photo: "./masters/daler.jpg" },
       { id: 3, name: "Azim",    photo: "./masters/azim.jpg" },
     ];
 
+    // ✅ заменённый список услуг
     const SERVICES = [
-      { id: 1, name: "Стрижка", duration: 45, price: 60000, icon: "✂️" },
-      { id: 2, name: "Борода", duration: 30, price: 40000, icon: "🧔" },
-      { id: 3, name: "Стрижка + Борода", duration: 75, price: 90000, icon: "👑" },
-      { id: 4, name: "Укладка", duration: 20, price: 25000, icon: "💈" },
+      { id: 1,  key:"men_haircut", name_ru:"Мужская стрижка", name_uz:"Erkaklar soch turmagi", name_en:"Men's haircut", duration:45, price:70000 },
+      { id: 2,  key:"kids_haircut", name_ru:"Детская стрижка (до 14лет)", name_uz:"Bolalar soch turmagi (14 yoshgacha)", name_en:"Kids haircut (up to 14)", duration:45, price:50000 },
+      { id: 3,  key:"clipper", name_ru:"Под насадку", name_uz:"Mashinka bilan", name_en:"Clipper cut", duration:30, price:40000 },
+      { id: 4,  key:"beard", name_ru:"Стрижка Бороды", name_uz:"Soqol olish", name_en:"Beard trim", duration:30, price:50000 },
+      { id: 5,  key:"styling", name_ru:"Укладка волос", name_uz:"Soch turmagi (ukladka)", name_en:"Hair styling", duration:20, price:40000 },
+      { id: 6,  key:"edging", name_ru:"Окантовка", name_uz:"Kontur (okantovka)", name_en:"Edging", duration:10, price:30000 },
+      { id: 7,  key:"mask", name_ru:"Маска для лица", name_uz:"Yuz niqobi", name_en:"Face mask", duration:30, price:40000 },
+      { id: 8,  key:"wax", name_ru:"Воск", name_uz:"Vosk", name_en:"Wax", duration:20, price:15000 },
+      { id: 9,  key:"hair_dye", name_ru:"Покраска волос", name_uz:"Soch bo'yash", name_en:"Hair coloring", duration:40, price:40000 },
+      { id: 10, key:"beard_dye", name_ru:"Покраска бороды", name_uz:"Soqol bo'yash", name_en:"Beard coloring", duration:30, price:30000 },
+      { id: 11, key:"wedding", name_ru:"Свадебная причёска", name_uz:"To'y soch turmagi", name_en:"Wedding hairstyle", duration:60, price:400000 },
     ];
 
     const PROMOS = [
@@ -386,44 +439,177 @@
 
     const el = (id) => document.getElementById(id);
 
+    const KEY_PROFILE = "tk_profile_v2";
+    const KEY_BOOKINGS = "tk_bookings_v2";
+    const KEY_LANG = "tk_lang_v1";
+
+    function fmtSum(n){
+      const x = Number(n) || 0;
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
     function todayISO(){
       const d = new Date();
       const p = (n) => String(n).padStart(2, "0");
       return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
     }
-    function fmtSum(n){
-      const x = Number(n) || 0;
-      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    }
     function normalizePhone(p){ return (p || "").trim().replace(/[^\d+]/g, ""); }
+    function sheetOpen(backdrop){ backdrop.classList.add("show"); document.body.style.overflow="hidden"; }
+    function sheetClose(backdrop){ backdrop.classList.remove("show"); document.body.style.overflow=""; }
 
-    function sheetOpen(backdrop){
-      backdrop.classList.add("show");
-      document.body.style.overflow = "hidden";
+    function loadProfile(){ try { return JSON.parse(localStorage.getItem(KEY_PROFILE) || "null"); } catch { return null; } }
+    function saveProfile(p){ localStorage.setItem(KEY_PROFILE, JSON.stringify(p)); }
+    function loadBookings(){ try { return JSON.parse(localStorage.getItem(KEY_BOOKINGS) || "[]"); } catch { return []; } }
+    function saveBookings(arr){ localStorage.setItem(KEY_BOOKINGS, JSON.stringify(arr)); }
+
+    function getLang(){
+      return (localStorage.getItem(KEY_LANG) || "ru").toLowerCase();
     }
-    function sheetClose(backdrop){
-      backdrop.classList.remove("show");
-      document.body.style.overflow = "";
+    function setLang(lang){
+      localStorage.setItem(KEY_LANG, lang);
     }
 
-    // storage keys
-    const KEY_PROFILE = "tk_profile_v1";
-    const KEY_BOOKINGS = "tk_bookings_v1";
+    const I18N = {
+      ru: {
+        booking:"Запись",
+        services:"Услуги",
+        pickServices:"Выбор услуг",
+        chooseServices:"Выбрать услуги",
+        notChosen:"Вы не выбрали услуги",
+        master:"Мастер",
+        date:"Дата",
+        time:"Время",
+        name:"Имя",
+        phone:"Телефон",
+        comment:"Комментарий",
+        commentPh:"Например: коротко по бокам",
+        duration:"Длительность",
+        min:"мин",
+        total:"Сумма",
+        confirm:"Подтвердить запись",
+        pickServiceFirst:"Выберите услугу (кнопка «Выбрать услуги»).",
+        pickMaster:"Выберите мастера.",
+        pickDate:"Выберите дату.",
+        pickTime:"Выберите время.",
+        enterName:"Введите имя.",
+        promos:"Акции",
+        contacts:"Контакты",
+        close:"Закрыть",
+        clear:"Сбросить",
+        done:"Готово",
+        profile:"Профиль",
+        lang:"Язык",
+        loginPhone:"Телефон (для входа)",
+        tgNick:"Telegram ник",
+        save:"Войти / Сохранить",
+        saved:"✅ Данные сохранены.",
+        enterPhoneOrNick:"Введите телефон или Telegram ник.",
+        myBookings:"Мои записи",
+        upcoming:"Предстоящие",
+        past:"Прошедшие",
+        noneUpcoming:"Предстоящих записей нет.",
+        nonePast:"Прошедших записей нет.",
+        testHint:"✅ (Тест) Откройте через Telegram WebApp чтобы отправить."
+      },
+      uz: {
+        booking:"Yozilish",
+        services:"Xizmatlar",
+        pickServices:"Xizmat tanlash",
+        chooseServices:"Xizmatlarni tanlash",
+        notChosen:"Xizmat tanlanmagan",
+        master:"Usta",
+        date:"Sana",
+        time:"Vaqt",
+        name:"Ism",
+        phone:"Telefon",
+        comment:"Izoh",
+        commentPh:"Masalan: yonlari qisqa",
+        duration:"Davomiyligi",
+        min:"daq",
+        total:"Jami",
+        confirm:"Yozilishni tasdiqlash",
+        pickServiceFirst:"Xizmat tanlang (\"Xizmatlarni tanlash\" tugmasi).",
+        pickMaster:"Ustani tanlang.",
+        pickDate:"Sanani tanlang.",
+        pickTime:"Vaqtni tanlang.",
+        enterName:"Ism kiriting.",
+        promos:"Aksiyalar",
+        contacts:"Kontaktlar",
+        close:"Yopish",
+        clear:"Tozalash",
+        done:"Tayyor",
+        profile:"Profil",
+        lang:"Til",
+        loginPhone:"Telefon (kirish uchun)",
+        tgNick:"Telegram nik",
+        save:"Kirish / Saqlash",
+        saved:"✅ Ma'lumotlar saqlandi.",
+        enterPhoneOrNick:"Telefon yoki Telegram nik kiriting.",
+        myBookings:"Mening yozilishlarim",
+        upcoming:"Kelajakdagi",
+        past:"O‘tgan",
+        noneUpcoming:"Kelajakdagi yozilish yo‘q.",
+        nonePast:"O‘tgan yozilish yo‘q.",
+        testHint:"✅ (Test) Telegram WebApp orqali oching."
+      },
+      en: {
+        booking:"Booking",
+        services:"Services",
+        pickServices:"Pick services",
+        chooseServices:"Choose services",
+        notChosen:"No services selected",
+        master:"Master",
+        date:"Date",
+        time:"Time",
+        name:"Name",
+        phone:"Phone",
+        comment:"Comment",
+        commentPh:"For example: short on sides",
+        duration:"Duration",
+        min:"min",
+        total:"Total",
+        confirm:"Confirm booking",
+        pickServiceFirst:"Choose a service (\"Choose services\" button).",
+        pickMaster:"Choose a master.",
+        pickDate:"Choose a date.",
+        pickTime:"Choose time.",
+        enterName:"Enter your name.",
+        promos:"Promotions",
+        contacts:"Contacts",
+        close:"Close",
+        clear:"Clear",
+        done:"Done",
+        profile:"Profile",
+        lang:"Language",
+        loginPhone:"Phone (login)",
+        tgNick:"Telegram username",
+        save:"Login / Save",
+        saved:"✅ Saved.",
+        enterPhoneOrNick:"Enter phone or Telegram username.",
+        myBookings:"My bookings",
+        upcoming:"Upcoming",
+        past:"Past",
+        noneUpcoming:"No upcoming bookings.",
+        nonePast:"No past bookings.",
+        testHint:"✅ (Test) Open via Telegram WebApp to send."
+      }
+    };
 
-    function loadProfile(){
-      try { return JSON.parse(localStorage.getItem(KEY_PROFILE) || "null"); } catch { return null; }
+    function svcNameByLang(s, lang){
+      if (lang === "uz") return s.name_uz;
+      if (lang === "en") return s.name_en;
+      return s.name_ru;
     }
-    function saveProfile(p){
-      localStorage.setItem(KEY_PROFILE, JSON.stringify(p));
-    }
-    function loadBookings(){
-      try { return JSON.parse(localStorage.getItem(KEY_BOOKINGS) || "[]"); } catch { return []; }
-    }
-    function saveBookings(arr){
-      localStorage.setItem(KEY_BOOKINGS, JSON.stringify(arr));
+
+    function parseBookingDateTimeISO(dateStr, timeStr){
+      // date: YYYY-MM-DD, time: HH:MM
+      const [y,m,d] = dateStr.split("-").map(Number);
+      const [hh,mm] = timeStr.split(":").map(Number);
+      // Local time
+      return new Date(y, (m-1), d, hh, mm, 0, 0).getTime();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      // elements
       const mastersRow = el("mastersRow");
 
       const btnServices = el("btnServices");
@@ -446,15 +632,41 @@
       const btnSend = el("btnSend");
 
       const fabProfile = el("fabProfile");
-      const profileBackdrop = el("profileBackdrop");
+      const profileWindow = el("profileWindow");
       const profileClose = el("profileClose");
       const profilePhone = el("profilePhone");
       const profileNick = el("profileNick");
       const btnSaveProfile = el("btnSaveProfile");
       const profileMsg = el("profileMsg");
       const btnMyBookings = el("btnMyBookings");
-      const myBookings = el("myBookings");
+      const upcomingList = el("upcomingList");
+      const pastList = el("pastList");
       const tgTag = el("tgTag");
+      const langSeg = el("langSeg");
+
+      // i18n targets
+      const t = {
+        booking: el("t_booking"),
+        services: el("t_services"),
+        master: el("t_master"),
+        date: el("t_date"),
+        time: el("t_time"),
+        name: el("t_name"),
+        phone: el("t_phone"),
+        comment: el("t_comment"),
+        duration: el("t_duration"),
+        min: el("t_min"),
+        total: el("t_total"),
+        promos: el("t_promos"),
+        contacts: el("t_contacts"),
+        servicesPick: el("t_services_pick"),
+        upcomingTag: el("t_upcoming_tag"),
+        pastTag: el("t_past_tag"),
+        profile: el("t_profile"),
+        lang: el("t_lang"),
+        loginPhone: el("t_login_phone"),
+        loginNick: el("t_login_nick"),
+      };
 
       if (tg) {
         tg.ready();
@@ -466,20 +678,86 @@
       let selectedServices = new Set();
       let selectedMasterId = null;
 
+      function setMsg(t){ msgEl.textContent = t || ""; }
+
+      function getStrings(){
+        const lang = getLang();
+        return I18N[lang] || I18N.ru;
+      }
+
+      function applyLang(){
+        const s = getStrings();
+        t.booking.textContent = s.booking;
+        t.services.textContent = s.services;
+        t.master.textContent = s.master;
+        t.date.textContent = s.date;
+        t.time.textContent = s.time;
+        t.name.textContent = s.name;
+        t.phone.textContent = s.phone;
+        t.comment.textContent = s.comment;
+        t.duration.textContent = s.duration;
+        t.min.textContent = s.min;
+        t.total.textContent = s.total;
+        t.promos.textContent = s.promos;
+        t.contacts.textContent = s.contacts;
+
+        t.servicesPick.textContent = s.pickServices;
+        btnServices.textContent = s.chooseServices;
+
+        commentEl.placeholder = s.commentPh;
+
+        servicesClose.textContent = s.close;
+        servicesClear.textContent = s.clear;
+        servicesDone.textContent = s.done;
+
+        t.profile.textContent = s.profile;
+        profileClose.textContent = s.close;
+        t.lang.textContent = s.lang;
+        t.loginPhone.textContent = s.loginPhone;
+        t.loginNick.textContent = s.tgNick;
+        btnSaveProfile.textContent = s.save;
+        btnMyBookings.textContent = s.myBookings;
+        t.upcomingTag.textContent = s.upcoming;
+        t.pastTag.textContent = s.past;
+
+        btnSend.textContent = s.confirm;
+
+        // segmented active
+        [...langSeg.querySelectorAll("button")].forEach(b => {
+          b.classList.toggle("active", b.dataset.lang === getLang());
+        });
+
+        // re-render services names + hint + lists
+        renderServicesSheet();
+        calc();
+        renderBookings();
+      }
+
       function calc(){
         let total = 0, dur = 0;
         const chosen = [];
+        const lang = getLang();
+
         for (const id of selectedServices) {
           const s = SERVICES.find(x => x.id === id);
           if (!s) continue;
           total += s.price;
           dur += s.duration;
-          chosen.push({ id: s.id, name: s.name, price: s.price, duration: s.duration, qty: 1 });
+          chosen.push({
+            id: s.id,
+            key: s.key,
+            name: svcNameByLang(s, lang),
+            price: s.price,
+            duration: s.duration,
+            qty: 1
+          });
         }
+
         durEl.textContent = dur ? String(dur) : "—";
         sumEl.textContent = total ? `${fmtSum(total)} so'm` : "—";
 
-        if (!chosen.length) servicesHint.textContent = "Вы не выбрали услуги";
+        const str = getStrings();
+        if (!chosen.length) servicesHint.textContent = str.notChosen;
         else servicesHint.textContent = chosen.map(x => x.name).join(" • ");
 
         return { total, dur, chosen };
@@ -498,17 +776,18 @@
         }
       }
 
-      // ✅ услуги в нижнем окне
+      // ✅ услуги: 2 в ряд + без эмодзи
       function renderServicesSheet(){
         servicesGrid.innerHTML = "";
+        const lang = getLang();
         SERVICES.forEach(s => {
           const d = document.createElement("div");
           d.className = "svcCard" + (selectedServices.has(s.id) ? " active" : "");
           d.innerHTML = `
-            <div class="svcIcon">${s.icon || "💈"}</div>
-            <div class="svcMeta">
-              <div class="svcName">${s.name}</div>
-              <div class="svcSub">${fmtSum(s.price)} so'm • ${s.duration} мин</div>
+            <div class="svcName">${svcNameByLang(s, lang)}</div>
+            <div class="svcSub">
+              <span>${fmtSum(s.price)} so'm</span>
+              <span>${s.duration} ${getStrings().min}</span>
             </div>
           `;
           d.onclick = () => {
@@ -535,7 +814,8 @@
           const c = document.createElement("div");
           c.className = "mcard" + (selectedMasterId === m.id ? " active" : "");
           c.innerHTML = `
-            <img class="mava" src="${m.photo}" alt="${m.name}" onerror="this.style.opacity='.45'; this.style.filter='grayscale(1)';"/>
+            <img class="mava" src="${m.photo}" alt="${m.name}"
+              onerror="this.style.opacity='.45'; this.style.filter='grayscale(1)';"/>
             <div class="mname">${m.name}</div>
             <div class="msub">мастер</div>
           `;
@@ -548,7 +828,7 @@
         });
       }
 
-      // акции
+      // promos
       promosEl.innerHTML = "";
       PROMOS.forEach(p => {
         const d = document.createElement("div");
@@ -557,15 +837,7 @@
         promosEl.appendChild(d);
       });
 
-      // базовые значения
-      dateEl.value = todayISO();
-      buildTimes();
-      renderMasters();
-
-      const u = tg?.initDataUnsafe?.user;
-      if (u?.first_name && !nameEl.value) nameEl.value = u.first_name;
-
-      // ===== Profile =====
+      // Telegram tag
       function fillTelegramTag(){
         const u = tg?.initDataUnsafe?.user;
         const nick = u?.username ? ("@" + u.username) : "—";
@@ -573,68 +845,123 @@
       }
       fillTelegramTag();
 
-      function renderMyBookings(){
-        const b = loadBookings();
-        if (!b.length){
-          myBookings.textContent = "Пока нет записей.";
-          return;
-        }
-        const lines = b
-          .slice()
-          .reverse()
-          .slice(0, 12)
-          .map(x => {
-            const svc = (x.services || []).map(s => s.name).join(", ");
-            return `• ${x.date} ${x.time} — ${x.master_name} — ${svc} — ${fmtSum(x.total)} so'm`;
-          });
-        myBookings.textContent = lines.join("\n");
-      }
+      // ✅ language buttons
+      langSeg.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-lang]");
+        if (!btn) return;
+        setLang(btn.dataset.lang);
+        // also store inside profile for convenience
+        const prof = loadProfile() || {};
+        prof.lang = getLang();
+        saveProfile(prof);
+        applyLang();
+      });
 
+      // ✅ Profile window open/close (другое окно)
       function openProfile(){
         const prof = loadProfile();
         const u = tg?.initDataUnsafe?.user;
 
         profilePhone.value = prof?.phone || "";
         profileNick.value = prof?.nick || (u?.username ? ("@" + u.username) : "");
-        profileMsg.textContent = prof?.phone || prof?.nick ? "✅ Данные сохранены" : "Введите телефон и ник для входа.";
-        renderMyBookings();
-        sheetOpen(profileBackdrop);
+        profileMsg.textContent = (prof?.phone || prof?.nick) ? getStrings().saved : getStrings().enterPhoneOrNick;
+
+        // if profile has saved lang -> apply
+        if (prof?.lang && (prof.lang === "ru" || prof.lang === "uz" || prof.lang === "en")) {
+          setLang(prof.lang);
+        }
+        applyLang();
+        renderBookings();
+        sheetOpen(profileWindow);
       }
 
       fabProfile.onclick = openProfile;
-      profileClose.onclick = () => sheetClose(profileBackdrop);
-      profileBackdrop.addEventListener("click", (e) => { if (e.target === profileBackdrop) sheetClose(profileBackdrop); });
+      profileClose.onclick = () => sheetClose(profileWindow);
+      profileWindow.addEventListener("click", (e) => { if (e.target === profileWindow) sheetClose(profileWindow); });
 
       btnSaveProfile.onclick = () => {
         const phone = normalizePhone(profilePhone.value);
         const nick = (profileNick.value || "").trim();
         if (!phone && !nick){
-          profileMsg.textContent = "Введите телефон или Telegram ник.";
+          profileMsg.textContent = getStrings().enterPhoneOrNick;
           return;
         }
         saveProfile({
           phone,
           nick,
+          lang: getLang(),
           updated_at: Date.now()
         });
-        profileMsg.textContent = "✅ Вход выполнен / данные сохранены.";
+        profileMsg.textContent = getStrings().saved;
       };
 
-      btnMyBookings.onclick = renderMyBookings;
+      // ✅ мои записи: предстоящие / прошедшие, запоминаем
+      function bookingCardHTML(x){
+        const svc = (x.services || []).map(s => s.name).join(", ");
+        return `
+          <div class="bcard">
+            <div class="btop">
+              <div>${x.date} ${x.time}</div>
+              <div>${fmtSum(x.total)} so'm</div>
+            </div>
+            <div class="btitle">${x.master_name || "—"}</div>
+            <div class="bsub">${svc || ""}</div>
+          </div>
+        `;
+      }
 
-      // ===== booking send =====
-      function setMsg(t){ msgEl.textContent = t || ""; }
+      function renderBookings(){
+        const str = getStrings();
+        const list = loadBookings();
+        const now = Date.now();
 
-      calc();
+        const withTs = list.map(b => {
+          const ts = (b.datetime_ts != null)
+            ? Number(b.datetime_ts)
+            : (b.date && b.time ? parseBookingDateTimeISO(b.date, b.time) : 0);
+          return { ...b, datetime_ts: ts };
+        });
 
+        // persist back if missing ts
+        saveBookings(withTs);
+
+        const upcoming = withTs
+          .filter(b => (b.datetime_ts || 0) >= (now - 5*60*1000))
+          .sort((a,b)=> (a.datetime_ts||0) - (b.datetime_ts||0));
+
+        const past = withTs
+          .filter(b => (b.datetime_ts || 0) < (now - 5*60*1000))
+          .sort((a,b)=> (b.datetime_ts||0) - (a.datetime_ts||0));
+
+        upcomingList.innerHTML = upcoming.length ? upcoming.map(bookingCardHTML).join("") : `<div class="msg">${str.noneUpcoming}</div>`;
+        pastList.innerHTML = past.length ? past.map(bookingCardHTML).join("") : `<div class="msg">${str.nonePast}</div>`;
+      }
+
+      btnMyBookings.onclick = renderBookings;
+
+      // init defaults
+      // saved language first
+      const prof0 = loadProfile();
+      if (prof0?.lang) setLang(prof0.lang);
+
+      dateEl.value = todayISO();
+      buildTimes();
+      renderMasters();
+      applyLang();
+
+      const u = tg?.initDataUnsafe?.user;
+      if (u?.first_name && !nameEl.value) nameEl.value = u.first_name;
+
+      // send booking
       btnSend.onclick = () => {
+        const str = getStrings();
         const { total, dur, chosen } = calc();
 
-        if (!chosen.length) return setMsg("Выберите услугу (кнопка «Выбрать услуги»).");
-        if (!selectedMasterId) return setMsg("Выберите мастера.");
-        if (!dateEl.value) return setMsg("Выберите дату.");
-        if (!timeEl.value) return setMsg("Выберите время.");
-        if (!nameEl.value.trim()) return setMsg("Введите имя.");
+        if (!chosen.length) return setMsg(str.pickServiceFirst);
+        if (!selectedMasterId) return setMsg(str.pickMaster);
+        if (!dateEl.value) return setMsg(str.pickDate);
+        if (!timeEl.value) return setMsg(str.pickTime);
+        if (!nameEl.value.trim()) return setMsg(str.enterName);
 
         const masterName = (MASTERS.find(m => m.id === selectedMasterId)?.name) || "—";
 
@@ -651,9 +978,11 @@
           total: total,
           duration_min: dur,
           client_ts: Date.now(),
+          lang: getLang(),
+          datetime_ts: parseBookingDateTimeISO(dateEl.value, timeEl.value),
         };
 
-        // ✅ сохраняем локально для "Мои записи"
+        // save locally
         const list = loadBookings();
         list.push(payload);
         saveBookings(list);
@@ -663,7 +992,7 @@
           tg.close();
         } else {
           console.log("Payload:", payload);
-          setMsg("✅ (Тест) Откройте через Telegram WebApp чтобы отправить.");
+          setMsg(str.testHint);
         }
       };
     });
