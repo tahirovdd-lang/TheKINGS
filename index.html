@@ -32,7 +32,7 @@
       color:var(--text);
       -webkit-text-size-adjust:100%;
       -webkit-tap-highlight-color: transparent;
-      overscroll-behavior: none;
+      overscroll-behavior:none;
     }
 
     .wrap{
@@ -63,7 +63,7 @@
       line-height:28px;
       appearance:none;
       -webkit-appearance:none;
-      font-size:16px; /* iOS no zoom */
+      font-size:16px;
     }
     textarea{
       resize:none;
@@ -95,23 +95,22 @@
       color:#111;
     }
     .btn:active{transform:translateY(1px)}
-    .btn.secondary{
-      background:transparent;
-      border:1px solid rgba(212,160,23,.55);
-      color:var(--text);
-      font-weight:800;
-    }
     .btn.primaryLike{
       background:linear-gradient(180deg, rgba(212,160,23,.96), rgba(180,130,10,.96));
       color:#111;
       border:0;
       font-weight:900;
     }
+    .btn.secondary{
+      background:transparent;
+      border:1px solid rgba(212,160,23,.55);
+      color:var(--text);
+      font-weight:800;
+    }
 
     .msg{margin-top:10px;color:var(--muted);font-size:13px;white-space:pre-line}
     .promo{border:1px dashed rgba(212,160,23,.35);border-radius:14px;padding:10px;margin:8px 0;background:rgba(212,160,23,.06)}
 
-    /* clickable links */
     a.link{
       color:var(--text);
       text-decoration:none;
@@ -156,6 +155,40 @@
     .mname{font-weight:900}
     .msub{font-size:12px;color:var(--muted);margin-top:2px}
 
+    /* ====== Works grid (4 images, 2x2) ====== */
+    .worksTitle{
+      margin:14px 0 10px;
+      font-weight:900;
+      font-size:15px;
+      color:var(--text);
+    }
+    .worksGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .workCard{
+      display:block;
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background:rgba(0,0,0,.18);
+      overflow:hidden;
+      cursor:pointer;
+      user-select:none;
+      min-height:150px;
+    }
+    .workImg{
+      width:100%;
+      height:170px;
+      object-fit:cover;
+      display:block;
+    }
+    @media (max-width:360px){
+      .workImg{height:150px}
+    }
+
+    /* ====== Sheets & FAB (kept) ====== */
     .sheetBackdrop{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -182,10 +215,7 @@
       padding:6px 2px 10px;
       gap:10px;
     }
-    .grab{
-      width:52px;height:4px;border-radius:999px;background:rgba(255,255,255,.18);
-      margin:6px auto 8px;
-    }
+    .grab{width:52px;height:4px;border-radius:999px;background:rgba(255,255,255,.18);margin:6px auto 8px}
     .sheetTitle{font-weight:900}
     .xbtn{
       border:1px solid rgba(255,255,255,.12);
@@ -197,11 +227,7 @@
       min-height:40px;
     }
 
-    .svcGrid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
+    .svcGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .svcCard{
       border:1px solid var(--stroke);
       border-radius:16px;
@@ -219,14 +245,12 @@
       border-color:rgba(212,160,23,.7);
       box-shadow:0 0 0 2px rgba(212,160,23,.18) inset;
     }
-    .svcName{font-weight:900; line-height:1.2}
-    .svcSub{font-size:12px;color:var(--muted); display:flex; justify-content:space-between; gap:8px}
+    .svcName{font-weight:900;line-height:1.2}
+    .svcSub{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
     .svcSub span{white-space:nowrap}
-
     .hr{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
     .sheetFooterSticky{
-      position:sticky;
-      bottom:0;
+      position:sticky;bottom:0;
       padding-top:10px;
       background:linear-gradient(180deg, rgba(15,15,17,0), rgba(15,15,17,.85) 30%, rgba(15,15,17,1));
       margin-top:10px;
@@ -257,41 +281,19 @@
       background:rgba(255,255,255,.04);
     }
     .seg button{
-      flex:1;
-      border:0;
-      background:transparent;
-      color:var(--muted);
-      padding:10px 8px;
-      cursor:pointer;
-      font-weight:900;
-      min-height:44px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
+      flex:1;border:0;background:transparent;color:var(--muted);
+      padding:10px 8px;cursor:pointer;font-weight:900;min-height:44px;
+      display:flex;align-items:center;justify-content:center;gap:8px;
     }
-    .seg button.active{
-      color:var(--text);
-      background:rgba(212,160,23,.14);
-    }
-    .flag{font-size:18px; line-height:1}
+    .seg button.active{color:var(--text);background:rgba(212,160,23,.14)}
+    .flag{font-size:18px;line-height:1}
 
-    .bcard{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      border-radius:14px;
-      padding:10px;
-      margin:8px 0;
-    }
+    .bcard{border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);border-radius:14px;padding:10px;margin:8px 0}
     .btop{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}
     .btitle{margin-top:6px;font-weight:900}
     .bsub{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.35}
 
-    .hello{
-      font-weight:900;
-      margin:0 0 8px;
-      font-size:16px;
-    }
+    .hello{font-weight:900;margin:0 0 8px;font-size:16px}
   </style>
 </head>
 
@@ -347,6 +349,23 @@
 
       <button id="btnSend" class="btn" type="button">Подтвердить запись</button>
       <div id="msg" class="msg"></div>
+
+      <!-- ✅ Работы наших мастеров -->
+      <div class="worksTitle">Работы наших мастеров</div>
+      <div class="worksGrid">
+        <a class="workCard" href="#" data-work="1" aria-label="Работа 1">
+          <img class="workImg" src="./images/work_1.jpg" alt="Work 1">
+        </a>
+        <a class="workCard" href="#" data-work="2" aria-label="Работа 2">
+          <img class="workImg" src="./images/work_2.jpg" alt="Work 2">
+        </a>
+        <a class="workCard" href="#" data-work="3" aria-label="Работа 3">
+          <img class="workImg" src="./images/work_3.jpg" alt="Work 3">
+        </a>
+        <a class="workCard" href="#" data-work="4" aria-label="Работа 4">
+          <img class="workImg" src="./images/work_4.jpg" alt="Work 4">
+        </a>
+      </div>
     </div>
 
     <div class="card">
@@ -358,18 +377,14 @@
       <h2 id="t_contacts">Контакты</h2>
       <div class="contacts">
         <div><b>THE KINGS BARBERSHOP</b></div>
-
         <div>
-          📍
-          <a class="link" id="geoLink" href="#" rel="noopener">г. Самарканд, Улица Узбекистанская, 84</a>
+          📍 <a class="link" id="geoLink" href="#" rel="noopener">г. Самарканд, Улица Узбекистанская, 84</a>
         </div>
-
         <div>🕘 09:00-22:00</div>
         <div>☎️ +998 98 001 21 07 / +998 90 601 73 71</div>
-
         <div>
           Instagram:
-          <a class="link" id="igLink" href="#" rel="noopener">@thekings_barbershop_sam</a>
+          <a class="link" id="igLink" href="#" rel="noopener">@thekings_barbershop___</a>
         </div>
       </div>
     </div>
@@ -449,7 +464,6 @@
   <script>
     const tg = (typeof window !== "undefined") ? window.Telegram?.WebApp : null;
 
-    // ✅ фото в папке images/
     const MASTERS = [
       { id: 1, name: "Dilshod", photo: "./images/master_dilshod.jpg" },
       { id: 2, name: "Daler",   photo: "./images/master_daler.jpg" },
@@ -477,9 +491,9 @@
 
     const el = (id) => document.getElementById(id);
 
-    const KEY_PROFILE = "tk_profile_v4";
-    const KEY_BOOKINGS = "tk_bookings_v4";
-    const KEY_LANG = "tk_lang_v3";
+    const KEY_PROFILE = "tk_profile_v5";
+    const KEY_BOOKINGS = "tk_bookings_v5";
+    const KEY_LANG = "tk_lang_v4";
 
     function fmtSum(n){
       const x = Number(n) || 0;
@@ -560,16 +574,14 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Force expand on open (fix "50% open")
+      // Fix "opens 50%"
       if (tg) {
         tg.ready();
         tg.expand();
-        // a second expand after tick helps on some devices
         setTimeout(()=>{ try{ tg.expand(); }catch(e){} }, 120);
         try { tg.setHeaderColor && tg.setHeaderColor("#0b0b0c"); } catch(e){}
         try { tg.setBackgroundColor && tg.setBackgroundColor("#0b0b0c"); } catch(e){}
       }
-      // extra scroll-to-top fix
       window.scrollTo(0,0);
 
       const mastersRow = el("mastersRow");
@@ -610,34 +622,15 @@
       const geoLink = el("geoLink");
       const igLink = el("igLink");
 
-      const t_booking = el("t_booking");
-      const t_services = el("t_services");
-      const t_master = el("t_master");
-      const t_date = el("t_date");
-      const t_time = el("t_time");
-      const t_name = el("t_name");
-      const t_phone = el("t_phone");
-      const t_comment = el("t_comment");
-      const t_duration = el("t_duration");
-      const t_min = el("t_min");
-      const t_total = el("t_total");
-      const t_promos = el("t_promos");
-      const t_contacts = el("t_contacts");
-      const t_services_pick = el("t_services_pick");
-      const t_profile = el("t_profile");
-      const t_lang = el("t_lang");
-      const t_login_phone = el("t_login_phone");
-      const t_login_nick = el("t_login_nick");
-      const t_upcoming_tag = el("t_upcoming_tag");
-      const t_past_tag = el("t_past_tag");
-
-      // clickable contacts
+      // ✅ Instagram for contacts and works
+      const IG_HANDLE = "@thekings_barbershop___";
+      const IG_URL = "https://instagram.com/thekings_barbershop___";
       const YANDEX_ROUTE = "https://yandex.uz/maps/org/228446087424/?ll=66.947459%2C39.643585&z=17.08";
-      const IG_URL = "https://instagram.com/thekings_barbershop_sam";
+
+      igLink.textContent = IG_HANDLE;
 
       geoLink.onclick = (e) => {
         e.preventDefault();
-        // open link using Telegram if available
         if (tg?.openLink) tg.openLink(YANDEX_ROUTE);
         else window.open(YANDEX_ROUTE, "_blank");
       };
@@ -647,54 +640,62 @@
         else window.open(IG_URL, "_blank");
       };
 
+      // Works -> instagram
+      document.querySelectorAll(".workCard").forEach(a=>{
+        a.addEventListener("click", (e)=>{
+          e.preventDefault();
+          if (tg?.openLink) tg.openLink(IG_URL);
+          else window.open(IG_URL, "_blank");
+        });
+      });
+
       let selectedServices = new Set();
       let selectedMasterId = null;
 
       function setMsg(t){ msgEl.textContent = t || ""; }
-
-      function loadProfile(){ try { return JSON.parse(localStorage.getItem(KEY_PROFILE) || "null"); } catch { return null; } }
-      function saveProfile(p){ localStorage.setItem(KEY_PROFILE, JSON.stringify(p)); }
-
       function strings(){ return I18N[getLang()] || I18N.ru; }
+
+      function getTelegramUser(){
+        const u = tg?.initDataUnsafe?.user;
+        return {
+          firstName: u?.first_name || "",
+          username: u?.username ? ("@" + u.username) : ""
+        };
+      }
 
       function applyLang(){
         const s = strings();
-
-        t_booking.textContent = s.booking;
-        t_services.textContent = s.services;
-        t_master.textContent = s.master;
-        t_date.textContent = s.date;
-        t_time.textContent = s.time;
-        t_name.textContent = s.name;
-        t_phone.textContent = s.phone;
-        t_comment.textContent = s.comment;
+        el("t_booking").textContent = s.booking;
+        el("t_services").textContent = s.services;
+        el("t_master").textContent = s.master;
+        el("t_date").textContent = s.date;
+        el("t_time").textContent = s.time;
+        el("t_name").textContent = s.name;
+        el("t_phone").textContent = s.phone;
+        el("t_comment").textContent = s.comment;
+        el("t_duration").textContent = s.duration;
+        el("t_min").textContent = s.min;
+        el("t_total").textContent = s.total;
+        el("t_promos").textContent = s.promos;
+        el("t_contacts").textContent = s.contacts;
 
         commentEl.placeholder = s.commentPh;
 
-        t_duration.textContent = s.duration;
-        t_min.textContent = s.min;
-        t_total.textContent = s.total;
-
         btnServices.textContent = s.chooseServices;
-        t_services_pick.textContent = s.pickServices;
+        el("t_services_pick").textContent = s.pickServices;
         servicesClose.textContent = s.close;
 
         btnSend.textContent = s.confirm;
-
-        t_promos.textContent = s.promos;
-        t_contacts.textContent = s.contacts;
-
-        t_profile.textContent = s.profile;
-        profileClose.textContent = s.close;
-        t_lang.textContent = s.lang;
-        t_login_phone.textContent = s.loginPhone;
-        t_login_nick.textContent = s.tgNick;
-
-        btnMyBookings.textContent = s.myBookings;
-        t_upcoming_tag.textContent = s.upcoming;
-        t_past_tag.textContent = s.past;
-
         servicesConfirm.textContent = s.confirmShort;
+
+        el("t_profile").textContent = s.profile;
+        profileClose.textContent = s.close;
+        el("t_lang").textContent = s.lang;
+        el("t_login_phone").textContent = s.loginPhone;
+        el("t_login_nick").textContent = s.tgNick;
+        btnMyBookings.textContent = s.myBookings;
+        el("t_upcoming_tag").textContent = s.upcoming;
+        el("t_past_tag").textContent = s.past;
 
         [...langSeg.querySelectorAll("button[data-lang]")].forEach(b=>{
           b.classList.toggle("active", b.dataset.lang === getLang());
@@ -708,18 +709,9 @@
 
       function updateHello(){
         const s = strings();
-        const prof = loadProfile();
-        const clientName = (prof?.name || "").trim();
+        const prof = loadProfile() || {};
+        const clientName = (prof.name || "").trim();
         helloLine.textContent = clientName ? `${s.hello} (${clientName})` : s.hello;
-      }
-
-      // ✅ telegram username auto to profile (always)
-      function getTelegramUser(){
-        const u = tg?.initDataUnsafe?.user;
-        return {
-          firstName: u?.first_name || "",
-          username: u?.username ? ("@" + u.username) : ""
-        };
       }
 
       function calc(){
@@ -732,14 +724,7 @@
           if (!svc) continue;
           total += svc.price;
           dur += svc.duration;
-          chosen.push({
-            id: svc.id,
-            key: svc.key,
-            name: svcNameByLang(svc, lang),
-            price: svc.price,
-            duration: svc.duration,
-            qty: 1
-          });
+          chosen.push({ id: svc.id, key: svc.key, name: svcNameByLang(svc, lang), price: svc.price, duration: svc.duration, qty: 1 });
         }
 
         durEl.textContent = dur ? String(dur) : "—";
@@ -777,7 +762,6 @@
       function renderServicesSheet(){
         servicesGrid.innerHTML = "";
         const lang = getLang();
-
         SERVICES.forEach(svc => {
           const d = document.createElement("div");
           d.className = "svcCard" + (selectedServices.has(svc.id) ? " active" : "");
@@ -819,6 +803,7 @@
         });
       }
 
+      // promos
       promosEl.innerHTML = "";
       PROMOS.forEach(p => {
         const d = document.createElement("div");
@@ -827,15 +812,14 @@
         promosEl.appendChild(d);
       });
 
+      // language switch
       langSeg.addEventListener("click", (e) => {
         const btn = e.target.closest("button[data-lang]");
         if (!btn) return;
         setLang(btn.dataset.lang);
-
         const prof = loadProfile() || {};
         prof.lang = getLang();
         saveProfile(prof);
-
         applyLang();
       });
 
@@ -859,47 +843,39 @@
         const now = Date.now();
 
         const withTs = list.map(b => {
-          const ts = (b.datetime_ts != null)
-            ? Number(b.datetime_ts)
+          const ts = (b.datetime_ts != null) ? Number(b.datetime_ts)
             : (b.date && b.time ? parseBookingDateTimeISO(b.date, b.time) : 0);
           return { ...b, datetime_ts: ts };
         });
         saveBookings(withTs);
 
-        const upcoming = withTs
-          .filter(b => (b.datetime_ts || 0) >= (now - 5*60*1000))
-          .sort((a,b)=> (a.datetime_ts||0) - (b.datetime_ts||0));
-
-        const past = withTs
-          .filter(b => (b.datetime_ts || 0) < (now - 5*60*1000))
-          .sort((a,b)=> (b.datetime_ts||0) - (a.datetime_ts||0));
+        const upcoming = withTs.filter(b => (b.datetime_ts||0) >= (now - 5*60*1000)).sort((a,b)=> (a.datetime_ts||0)-(b.datetime_ts||0));
+        const past = withTs.filter(b => (b.datetime_ts||0) < (now - 5*60*1000)).sort((a,b)=> (b.datetime_ts||0)-(a.datetime_ts||0));
 
         upcomingList.innerHTML = upcoming.length ? upcoming.map(bookingCardHTML).join("") : `<div class="msg">${s.noneUpcoming}</div>`;
         pastList.innerHTML = past.length ? past.map(bookingCardHTML).join("") : `<div class="msg">${s.nonePast}</div>`;
       }
 
+      btnMyBookings.onclick = renderBookings;
+
       function openProfile(){
         const prof = loadProfile() || {};
         const tgU = getTelegramUser();
 
-        // always pull TG nick automatically
-        if (tgU.username && prof.nick !== tgU.username){
-          prof.nick = tgU.username;
-        }
-        // also try save name from main input / tg first name
+        // always pull TG nick
+        if (tgU.username) prof.nick = tgU.username;
+
+        // save name from main input or tg first name
         const nameMain = (nameEl.value || "").trim();
-        if (!prof.name && (nameMain || tgU.firstName)){
-          prof.name = nameMain || tgU.firstName;
-        }
+        if (!prof.name && (nameMain || tgU.firstName)) prof.name = nameMain || tgU.firstName;
+
         prof.lang = prof.lang || getLang();
         saveProfile(prof);
 
-        // fill fields
         tgTag.textContent = "Telegram: " + (prof.nick || "—");
         profileNick.value = prof.nick || "";
         profilePhone.value = prof.phone || "";
 
-        // hide save form when already has phone OR nick OR name (as you wanted)
         const savedEnough = !!(prof.phone || prof.nick || prof.name);
         profileForm.style.display = savedEnough ? "none" : "";
 
@@ -930,7 +906,6 @@
           updated_at: Date.now()
         });
 
-        // hide save + no "saved" message
         profileForm.style.display = "none";
         tgTag.textContent = "Telegram: " + (nick || "—");
         updateHello();
@@ -947,7 +922,6 @@
       const tgU0 = getTelegramUser();
       if (tgU0.firstName && !nameEl.value) nameEl.value = tgU0.firstName;
 
-      // store name while typing
       nameEl.addEventListener("input", () => {
         const prof = loadProfile() || {};
         prof.name = nameEl.value.trim();
@@ -987,7 +961,6 @@
           client_ts: Date.now(),
           lang: getLang(),
           datetime_ts: parseBookingDateTimeISO(dateEl.value, timeEl.value),
-
           profile_name: (prof.name || nameEl.value.trim() || tgU.firstName || ""),
           profile_nick: (prof.nick || tgU.username || ""),
         };
