@@ -294,6 +294,30 @@
     .bsub{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.35}
 
     .hello{font-weight:900;margin:0 0 8px;font-size:16px}
+
+    /* ✅ Profile header links (Geo + Instagram) */
+    .profileHeadLinks{
+      display:flex;
+      gap:10px;
+      margin:-2px 2px 10px;
+    }
+    .pLinkBtn{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      border-radius:14px;
+      border:1px solid rgba(212,160,23,.35);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+    }
+    .pLinkBtn:active{transform:translateY(1px)}
+    .pLinkBtn svg{width:18px;height:18px;fill:rgba(212,160,23,.95)}
   </style>
 </head>
 
@@ -377,15 +401,9 @@
       <h2 id="t_contacts">Контакты</h2>
       <div class="contacts">
         <div><b>THE KINGS BARBERSHOP</b></div>
-        <div>
-          📍 <a class="link" id="geoLink" href="#" rel="noopener">г. Самарканд, Улица Узбекистанская, 84</a>
-        </div>
         <div>🕘 09:00-22:00</div>
         <div>☎️ +998 98 001 21 07 / +998 90 601 73 71</div>
-        <div>
-          Instagram:
-          <a class="link" id="igLink" href="#" rel="noopener">@thekings_barbershop___</a>
-        </div>
+        <!-- ✅ Геолокацию и Instagram перенесли в профиль -->
       </div>
     </div>
   </div>
@@ -422,6 +440,23 @@
       <div class="sheetHeader">
         <div class="sheetTitle" id="t_profile">Профиль</div>
         <button id="profileClose" class="xbtn" type="button">Закрыть</button>
+      </div>
+
+      <!-- ✅ Перенесено: Геолокация + Instagram в шапку профиля -->
+      <div class="profileHeadLinks">
+        <button id="profileGeoBtn" class="pLinkBtn" type="button" aria-label="Геолокация">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 14.5 9 2.5 2.5 0 0 1 12 11.5Z"/>
+          </svg>
+          <span id="t_geo_btn">Геолокация</span>
+        </button>
+
+        <button id="profileIgBtn" class="pLinkBtn" type="button" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4.5A5.5 5.5 0 1 1 6.5 14 5.5 5.5 0 0 1 12 8.5Zm0 2A3.5 3.5 0 1 0 15.5 14 3.5 3.5 0 0 0 12 10.5ZM18 7.2a1 1 0 1 1-1-1 1 1 0 0 1 1 1Z"/>
+          </svg>
+          <span id="t_ig_btn">Instagram</span>
+        </button>
       </div>
 
       <div class="hello" id="helloLine">Приветствую Вас</div>
@@ -529,7 +564,9 @@
         myBookings:"Мои записи", upcoming:"Предстоящие", past:"Прошедшие",
         noneUpcoming:"Предстоящих записей нет.", nonePast:"Прошедших записей нет.",
         testHint:"✅ (Тест) Откройте через Telegram WebApp чтобы отправить.",
-        hello:"Приветствую Вас"
+        hello:"Приветствую Вас",
+        geoBtn:"Геолокация",
+        igBtn:"Instagram"
       },
       uz: {
         booking:"Yozilish", services:"Xizmatlar", pickServices:"Xizmat tanlash", chooseServices:"Xizmatlarni tanlash", notChosen:"Xizmat tanlanmagan",
@@ -543,7 +580,9 @@
         myBookings:"Mening yozilishlarim", upcoming:"Kelajakdagi", past:"O‘tgan",
         noneUpcoming:"Kelajakdagi yozilish yo‘q.", nonePast:"O‘tgan yozilish yo‘q.",
         testHint:"✅ (Test) Telegram WebApp orqali oching.",
-        hello:"Xush kelibsiz"
+        hello:"Xush kelibsiz",
+        geoBtn:"Lokatsiya",
+        igBtn:"Instagram"
       },
       en: {
         booking:"Booking", services:"Services", pickServices:"Pick services", chooseServices:"Choose services", notChosen:"No services selected",
@@ -557,7 +596,9 @@
         myBookings:"My bookings", upcoming:"Upcoming", past:"Past",
         noneUpcoming:"No upcoming bookings.", nonePast:"No past bookings.",
         testHint:"✅ (Test) Open via Telegram WebApp to send.",
-        hello:"Welcome"
+        hello:"Welcome",
+        geoBtn:"Location",
+        igBtn:"Instagram"
       }
     };
 
@@ -619,23 +660,21 @@
       const tgTag = el("tgTag");
       const langSeg = el("langSeg");
 
-      const geoLink = el("geoLink");
-      const igLink = el("igLink");
+      // ✅ Profile header buttons
+      const profileGeoBtn = el("profileGeoBtn");
+      const profileIgBtn  = el("profileIgBtn");
 
-      // ✅ Instagram for contacts and works
+      // ✅ Instagram & route
       const IG_HANDLE = "@thekings_barbershop___";
       const IG_URL = "https://instagram.com/thekings_barbershop___";
       const YANDEX_ROUTE = "https://yandex.uz/maps/org/228446087424/?ll=66.947459%2C39.643585&z=17.08";
 
-      igLink.textContent = IG_HANDLE;
-
-      geoLink.onclick = (e) => {
-        e.preventDefault();
+      // Profile header actions
+      profileGeoBtn.onclick = () => {
         if (tg?.openLink) tg.openLink(YANDEX_ROUTE);
         else window.open(YANDEX_ROUTE, "_blank");
       };
-      igLink.onclick = (e) => {
-        e.preventDefault();
+      profileIgBtn.onclick = () => {
         if (tg?.openLink) tg.openLink(IG_URL);
         else window.open(IG_URL, "_blank");
       };
@@ -696,6 +735,10 @@
         btnMyBookings.textContent = s.myBookings;
         el("t_upcoming_tag").textContent = s.upcoming;
         el("t_past_tag").textContent = s.past;
+
+        // ✅ Buttons labels in profile header
+        el("t_geo_btn").textContent = s.geoBtn;
+        el("t_ig_btn").textContent = s.igBtn;
 
         [...langSeg.querySelectorAll("button[data-lang]")].forEach(b=>{
           b.classList.toggle("active", b.dataset.lang === getLang());
