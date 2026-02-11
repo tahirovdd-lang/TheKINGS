@@ -9,34 +9,230 @@
   <style>
     :root{
       --bg:#0b0b0c;
+      --surface:rgba(255,255,255,.04);
+      --surface2:rgba(0,0,0,.22);
       --stroke:rgba(255,255,255,.10);
       --text:#f5f5f7;
       --muted:rgba(255,255,255,.72);
       --gold:#d4a017;
+      --gold2:#b4820a;
+      --safeB: env(safe-area-inset-bottom, 0px);
+      --safeT: env(safe-area-inset-top, 0px);
+      --safeL: env(safe-area-inset-left, 0px);
+      --safeR: env(safe-area-inset-right, 0px);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:520px;margin:0 auto;padding:14px 12px 40px}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-text-size-adjust:100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wrap{
+      max-width:520px;
+      margin:0 auto;
+      padding:calc(14px + var(--safeT)) calc(12px + var(--safeL)) calc(76px + var(--safeB)) calc(12px + var(--safeR));
+    }
     .top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
     .logo{width:56px;height:56px;border-radius:16px;object-fit:cover;border:1px solid var(--stroke)}
     h1{margin:0;font-size:22px}
     p{margin:2px 0 0;color:var(--muted);font-weight:700;letter-spacing:2px}
-    .card{border:1px solid var(--stroke);border-radius:18px;padding:14px;margin:12px 0;background:rgba(255,255,255,.04)}
+    .card{border:1px solid var(--stroke);border-radius:18px;padding:14px;margin:12px 0;background:var(--surface)}
     h2{margin:0 0 12px;font-size:16px}
     label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
-    input,select,textarea{width:100%;background:rgba(0,0,0,.22);color:var(--text);border:1px solid var(--stroke);border-radius:12px;padding:10px;outline:none}
-    textarea{resize:none}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    input,select,textarea{
+      width:100%;
+      background:var(--surface2);
+      color:var(--text);
+      border:1px solid var(--stroke);
+      border-radius:12px;
+      padding:10px;
+      outline:none;
+      min-height:44px; /* iOS */
+    }
+    textarea{resize:none; min-height:64px}
+
+    /* ✅ фикс перекрытия дата/время на мобилках: авто-колонки и min-width */
+    .grid2{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    @media (min-width:420px){
+      .grid2{grid-template-columns:1fr 1fr;}
+    }
+    .field{min-width:0}
+
+    .chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .chip{border:1px solid var(--stroke);border-radius:14px;padding:10px;background:rgba(0,0,0,.18);cursor:pointer;user-select:none}
     .chip-sub{color:rgba(255,255,255,.72);font-size:12px;margin-top:4px}
     .chip.active{border-color:rgba(212,160,23,.7);box-shadow:0 0 0 2px rgba(212,160,23,.18) inset}
-    .row{display:flex;gap:10px}
-    .col{flex:1}
-    .summary{display:flex;justify-content:space-between;color:var(--muted);margin:12px 0}
-    .btn{width:100%;border:0;border-radius:14px;padding:12px;background:linear-gradient(180deg, rgba(212,160,23,.96), rgba(180,130,10,.96));font-weight:900;cursor:pointer;color:#111}
+
+    .summary{display:flex;justify-content:space-between;color:var(--muted);margin:12px 0;gap:10px}
+    .summary > div{min-width:0}
+
+    .btn{width:100%;border:0;border-radius:14px;padding:12px;min-height:48px;background:linear-gradient(180deg, rgba(212,160,23,.96), rgba(180,130,10,.96));font-weight:900;cursor:pointer;color:#111}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{
+      background:transparent;
+      border:1px solid rgba(212,160,23,.55);
+      color:var(--text);
+      font-weight:800;
+    }
+
     .msg{margin-top:10px;color:var(--muted);font-size:13px}
     .promo{border:1px dashed rgba(212,160,23,.35);border-radius:14px;padding:10px;margin:8px 0;background:rgba(212,160,23,.06)}
     .contacts{color:var(--muted);line-height:1.35}
+
+    /* ====== Masters row (иконки в ряд) ====== */
+    .mastersRow{
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      padding:4px 2px 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mcard{
+      flex:0 0 auto;
+      width:110px;
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:10px;
+      background:rgba(0,0,0,.18);
+      cursor:pointer;
+      user-select:none;
+      text-align:center;
+    }
+    .mcard.active{
+      border-color:rgba(212,160,23,.7);
+      box-shadow:0 0 0 2px rgba(212,160,23,.18) inset;
+    }
+    .mava{
+      width:54px;height:54px;border-radius:999px;
+      border:1px solid var(--stroke);
+      object-fit:cover;
+      background:rgba(255,255,255,.06);
+      display:block;
+      margin:0 auto 8px;
+    }
+    .mname{font-weight:900}
+    .msub{font-size:12px;color:var(--muted);margin-top:2px}
+
+    /* ====== Bottom sheets ====== */
+    .sheetBackdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      z-index:50;
+      padding:0;
+    }
+    .sheetBackdrop.show{display:block}
+    .sheet{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      background:#0f0f11;
+      border-top:1px solid rgba(255,255,255,.10);
+      border-radius:18px 18px 0 0;
+      padding:10px 12px calc(12px + var(--safeB));
+      transform:translateY(10px);
+      animation: sheetUp .16s ease-out forwards;
+      max-height:min(78vh, 620px);
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    @keyframes sheetUp{to{transform:translateY(0)}}
+    .sheetHeader{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:6px 2px 10px;
+      gap:10px;
+    }
+    .grab{
+      width:52px;height:4px;border-radius:999px;background:rgba(255,255,255,.18);
+      margin:6px auto 8px;
+    }
+    .sheetTitle{font-weight:900}
+    .xbtn{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      min-height:40px;
+    }
+
+    .svcGrid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    @media (min-width:420px){
+      .svcGrid{grid-template-columns:1fr 1fr;}
+    }
+    .svcCard{
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:12px;
+      background:rgba(0,0,0,.18);
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      min-height:64px;
+    }
+    .svcCard.active{
+      border-color:rgba(212,160,23,.7);
+      box-shadow:0 0 0 2px rgba(212,160,23,.18) inset;
+    }
+    .svcIcon{
+      width:42px;height:42px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(212,160,23,.10);
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;
+      flex:0 0 auto;
+    }
+    .svcMeta{min-width:0}
+    .svcName{font-weight:900}
+    .svcSub{font-size:12px;color:var(--muted);margin-top:3px}
+
+    /* ====== Floating profile button ====== */
+    .fab{
+      position:fixed;
+      right:14px;
+      bottom:calc(14px + var(--safeB));
+      z-index:40;
+      width:54px;height:54px;border-radius:18px;
+      border:1px solid rgba(212,160,23,.35);
+      background:rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;
+    }
+    .fab:active{transform:translateY(1px)}
+    .fab svg{width:24px;height:24px;fill:rgba(212,160,23,.95)}
+    .hint{
+      font-size:12px;color:var(--muted);
+      margin-top:6px;
+    }
+
+    /* small helpers */
+    .hr{height:1px;background:rgba(255,255,255,.08);margin:10px 0}
+    .rowBtns{display:flex;gap:10px}
+    .rowBtns .btn{flex:1}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:12px;color:var(--muted);
+      border:1px solid rgba(255,255,255,.10);
+      padding:8px 10px;border-radius:999px;
+      background:rgba(255,255,255,.04);
+    }
   </style>
 </head>
 
@@ -53,29 +249,32 @@
     <div class="card">
       <h2>Запись</h2>
 
+      <!-- ✅ Услуги: кнопка открывает окно снизу -->
       <label>Услуги</label>
-      <div id="services" class="grid"></div>
+      <button id="btnServices" class="btn secondary" type="button">Выбрать услуги</button>
+      <div class="hint" id="servicesHint">Вы не выбрали услуги</div>
 
+      <!-- ✅ Мастера: иконки с фото в ряд -->
       <label>Мастер</label>
-      <select id="master"></select>
+      <div id="mastersRow" class="mastersRow"></div>
 
-      <div class="row">
-        <div class="col">
+      <div class="grid2">
+        <div class="field">
           <label>Дата</label>
           <input id="date" type="date"/>
         </div>
-        <div class="col">
+        <div class="field">
           <label>Время</label>
           <select id="time"></select>
         </div>
       </div>
 
-      <div class="row">
-        <div class="col">
+      <div class="grid2">
+        <div class="field">
           <label>Имя</label>
           <input id="name" type="text" placeholder="Ваше имя"/>
         </div>
-        <div class="col">
+        <div class="field">
           <label>Телефон</label>
           <input id="phone" type="tel" placeholder="+998 __ ___ __ __"/>
         </div>
@@ -89,7 +288,7 @@
         <div>Сумма: <b id="sum">—</b></div>
       </div>
 
-      <button id="btnSend" class="btn">Подтвердить запись</button>
+      <button id="btnSend" class="btn" type="button">Подтвердить запись</button>
       <div id="msg" class="msg"></div>
     </div>
 
@@ -110,20 +309,74 @@
     </div>
   </div>
 
+  <!-- Floating profile button -->
+  <button id="fabProfile" class="fab" type="button" aria-label="Профиль">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2-8 4.5A1.5 1.5 0 0 0 5.5 20h13A1.5 1.5 0 0 0 20 18.5C20 16 16.42 14 12 14Z"/>
+    </svg>
+  </button>
+
+  <!-- Services bottom sheet -->
+  <div id="servicesBackdrop" class="sheetBackdrop" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sheetHeader">
+        <div class="sheetTitle">Выбор услуг</div>
+        <button id="servicesClose" class="xbtn" type="button">Закрыть</button>
+      </div>
+      <div id="servicesGrid" class="svcGrid"></div>
+      <div class="hr"></div>
+      <div class="rowBtns">
+        <button id="servicesClear" class="btn secondary" type="button">Сбросить</button>
+        <button id="servicesDone" class="btn" type="button">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile bottom sheet -->
+  <div id="profileBackdrop" class="sheetBackdrop" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sheetHeader">
+        <div class="sheetTitle">Профиль</div>
+        <button id="profileClose" class="xbtn" type="button">Закрыть</button>
+      </div>
+
+      <div class="tag" id="tgTag">Telegram: —</div>
+
+      <label style="margin-top:12px">Телефон (для входа)</label>
+      <input id="profilePhone" type="tel" placeholder="+998 __ ___ __ __"/>
+
+      <label>Telegram ник (если нет — впишите вручную)</label>
+      <input id="profileNick" type="text" placeholder="@username"/>
+
+      <div class="hr"></div>
+
+      <button id="btnSaveProfile" class="btn" type="button">Войти / Сохранить</button>
+      <div class="msg" id="profileMsg"></div>
+
+      <div class="hr"></div>
+
+      <button id="btnMyBookings" class="btn secondary" type="button">Мои записи</button>
+      <div id="myBookings" class="msg"></div>
+    </div>
+  </div>
+
   <script>
     const tg = (typeof window !== "undefined") ? window.Telegram?.WebApp : null;
 
+    // ✅ мастера (изменены имена)
     const MASTERS = [
-      { id: 1, name: "Aziz" },
-      { id: 2, name: "Javohir" },
-      { id: 3, name: "Sardor" },
+      { id: 1, name: "Dilshod", photo: "./masters/dilshod.jpg" }, // позже заменишь фото
+      { id: 2, name: "Daler",   photo: "./masters/daler.jpg" },
+      { id: 3, name: "Azim",    photo: "./masters/azim.jpg" },
     ];
 
     const SERVICES = [
-      { id: 1, name: "Стрижка", duration: 45, price: 60000 },
-      { id: 2, name: "Борода", duration: 30, price: 40000 },
-      { id: 3, name: "Стрижка + Борода", duration: 75, price: 90000 },
-      { id: 4, name: "Укладка", duration: 20, price: 25000 },
+      { id: 1, name: "Стрижка", duration: 45, price: 60000, icon: "✂️" },
+      { id: 2, name: "Борода", duration: 30, price: 40000, icon: "🧔" },
+      { id: 3, name: "Стрижка + Борода", duration: 75, price: 90000, icon: "👑" },
+      { id: 4, name: "Укладка", duration: 20, price: 25000, icon: "💈" },
     ];
 
     const PROMOS = [
@@ -142,10 +395,45 @@
       const x = Number(n) || 0;
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
     }
+    function normalizePhone(p){ return (p || "").trim().replace(/[^\d+]/g, ""); }
+
+    function sheetOpen(backdrop){
+      backdrop.classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+    function sheetClose(backdrop){
+      backdrop.classList.remove("show");
+      document.body.style.overflow = "";
+    }
+
+    // storage keys
+    const KEY_PROFILE = "tk_profile_v1";
+    const KEY_BOOKINGS = "tk_bookings_v1";
+
+    function loadProfile(){
+      try { return JSON.parse(localStorage.getItem(KEY_PROFILE) || "null"); } catch { return null; }
+    }
+    function saveProfile(p){
+      localStorage.setItem(KEY_PROFILE, JSON.stringify(p));
+    }
+    function loadBookings(){
+      try { return JSON.parse(localStorage.getItem(KEY_BOOKINGS) || "[]"); } catch { return []; }
+    }
+    function saveBookings(arr){
+      localStorage.setItem(KEY_BOOKINGS, JSON.stringify(arr));
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
-      const servicesEl = el("services");
-      const masterEl = el("master");
+      const mastersRow = el("mastersRow");
+
+      const btnServices = el("btnServices");
+      const servicesHint = el("servicesHint");
+      const servicesBackdrop = el("servicesBackdrop");
+      const servicesClose = el("servicesClose");
+      const servicesGrid = el("servicesGrid");
+      const servicesClear = el("servicesClear");
+      const servicesDone = el("servicesDone");
+
       const dateEl = el("date");
       const timeEl = el("time");
       const nameEl = el("name");
@@ -157,14 +445,31 @@
       const promosEl = el("promos");
       const btnSend = el("btnSend");
 
-      if (tg) { tg.ready(); tg.expand(); }
+      const fabProfile = el("fabProfile");
+      const profileBackdrop = el("profileBackdrop");
+      const profileClose = el("profileClose");
+      const profilePhone = el("profilePhone");
+      const profileNick = el("profileNick");
+      const btnSaveProfile = el("btnSaveProfile");
+      const profileMsg = el("profileMsg");
+      const btnMyBookings = el("btnMyBookings");
+      const myBookings = el("myBookings");
+      const tgTag = el("tgTag");
 
-      let selected = new Set();
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        try { tg.setHeaderColor && tg.setHeaderColor("#0b0b0c"); } catch(e){}
+        try { tg.setBackgroundColor && tg.setBackgroundColor("#0b0b0c"); } catch(e){}
+      }
+
+      let selectedServices = new Set();
+      let selectedMasterId = null;
 
       function calc(){
         let total = 0, dur = 0;
         const chosen = [];
-        for (const id of selected) {
+        for (const id of selectedServices) {
           const s = SERVICES.find(x => x.id === id);
           if (!s) continue;
           total += s.price;
@@ -173,6 +478,10 @@
         }
         durEl.textContent = dur ? String(dur) : "—";
         sumEl.textContent = total ? `${fmtSum(total)} so'm` : "—";
+
+        if (!chosen.length) servicesHint.textContent = "Вы не выбрали услуги";
+        else servicesHint.textContent = chosen.map(x => x.name).join(" • ");
+
         return { total, dur, chosen };
       }
 
@@ -189,32 +498,55 @@
         }
       }
 
-      // услуги
-      servicesEl.innerHTML = "";
-      SERVICES.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "chip";
-        div.innerHTML = `<b>${s.name}</b><div class="chip-sub">${fmtSum(s.price)} so'm • ${s.duration} мин</div>`;
-        div.onclick = () => {
-          if (selected.has(s.id)) { selected.delete(s.id); div.classList.remove("active"); }
-          else { selected.add(s.id); div.classList.add("active"); }
-          calc();
-        };
-        servicesEl.appendChild(div);
-      });
+      // ✅ услуги в нижнем окне
+      function renderServicesSheet(){
+        servicesGrid.innerHTML = "";
+        SERVICES.forEach(s => {
+          const d = document.createElement("div");
+          d.className = "svcCard" + (selectedServices.has(s.id) ? " active" : "");
+          d.innerHTML = `
+            <div class="svcIcon">${s.icon || "💈"}</div>
+            <div class="svcMeta">
+              <div class="svcName">${s.name}</div>
+              <div class="svcSub">${fmtSum(s.price)} so'm • ${s.duration} мин</div>
+            </div>
+          `;
+          d.onclick = () => {
+            if (selectedServices.has(s.id)) selectedServices.delete(s.id);
+            else selectedServices.add(s.id);
+            renderServicesSheet();
+            calc();
+          };
+          servicesGrid.appendChild(d);
+        });
+      }
 
-      // мастера
-      masterEl.innerHTML = "";
-      const def = document.createElement("option");
-      def.value = "";
-      def.textContent = "Выберите мастера";
-      masterEl.appendChild(def);
-      MASTERS.forEach(m => {
-        const o = document.createElement("option");
-        o.value = String(m.id);
-        o.textContent = m.name;
-        masterEl.appendChild(o);
-      });
+      btnServices.onclick = () => { renderServicesSheet(); sheetOpen(servicesBackdrop); };
+      servicesClose.onclick = () => sheetClose(servicesBackdrop);
+      servicesBackdrop.addEventListener("click", (e) => { if (e.target === servicesBackdrop) sheetClose(servicesBackdrop); });
+
+      servicesClear.onclick = () => { selectedServices = new Set(); renderServicesSheet(); calc(); };
+      servicesDone.onclick = () => sheetClose(servicesBackdrop);
+
+      // ✅ мастера: иконки с фото в ряд
+      function renderMasters(){
+        mastersRow.innerHTML = "";
+        MASTERS.forEach(m => {
+          const c = document.createElement("div");
+          c.className = "mcard" + (selectedMasterId === m.id ? " active" : "");
+          c.innerHTML = `
+            <img class="mava" src="${m.photo}" alt="${m.name}" onerror="this.style.opacity='.45'; this.style.filter='grayscale(1)';"/>
+            <div class="mname">${m.name}</div>
+            <div class="msub">мастер</div>
+          `;
+          c.onclick = () => {
+            selectedMasterId = m.id;
+            renderMasters();
+            setMsg("");
+          };
+          mastersRow.appendChild(c);
+        });
+      }
 
       // акции
       promosEl.innerHTML = "";
@@ -225,35 +557,93 @@
         promosEl.appendChild(d);
       });
 
+      // базовые значения
       dateEl.value = todayISO();
       buildTimes();
+      renderMasters();
 
       const u = tg?.initDataUnsafe?.user;
       if (u?.first_name && !nameEl.value) nameEl.value = u.first_name;
 
-      calc();
+      // ===== Profile =====
+      function fillTelegramTag(){
+        const u = tg?.initDataUnsafe?.user;
+        const nick = u?.username ? ("@" + u.username) : "—";
+        tgTag.textContent = "Telegram: " + nick;
+      }
+      fillTelegramTag();
 
+      function renderMyBookings(){
+        const b = loadBookings();
+        if (!b.length){
+          myBookings.textContent = "Пока нет записей.";
+          return;
+        }
+        const lines = b
+          .slice()
+          .reverse()
+          .slice(0, 12)
+          .map(x => {
+            const svc = (x.services || []).map(s => s.name).join(", ");
+            return `• ${x.date} ${x.time} — ${x.master_name} — ${svc} — ${fmtSum(x.total)} so'm`;
+          });
+        myBookings.textContent = lines.join("\n");
+      }
+
+      function openProfile(){
+        const prof = loadProfile();
+        const u = tg?.initDataUnsafe?.user;
+
+        profilePhone.value = prof?.phone || "";
+        profileNick.value = prof?.nick || (u?.username ? ("@" + u.username) : "");
+        profileMsg.textContent = prof?.phone || prof?.nick ? "✅ Данные сохранены" : "Введите телефон и ник для входа.";
+        renderMyBookings();
+        sheetOpen(profileBackdrop);
+      }
+
+      fabProfile.onclick = openProfile;
+      profileClose.onclick = () => sheetClose(profileBackdrop);
+      profileBackdrop.addEventListener("click", (e) => { if (e.target === profileBackdrop) sheetClose(profileBackdrop); });
+
+      btnSaveProfile.onclick = () => {
+        const phone = normalizePhone(profilePhone.value);
+        const nick = (profileNick.value || "").trim();
+        if (!phone && !nick){
+          profileMsg.textContent = "Введите телефон или Telegram ник.";
+          return;
+        }
+        saveProfile({
+          phone,
+          nick,
+          updated_at: Date.now()
+        });
+        profileMsg.textContent = "✅ Вход выполнен / данные сохранены.";
+      };
+
+      btnMyBookings.onclick = renderMyBookings;
+
+      // ===== booking send =====
       function setMsg(t){ msgEl.textContent = t || ""; }
-      function normalizePhone(p){ return (p || "").trim().replace(/[^\d+]/g, ""); }
+
+      calc();
 
       btnSend.onclick = () => {
         const { total, dur, chosen } = calc();
 
-        if (!chosen.length) return setMsg("Выберите услугу.");
-        if (!masterEl.value) return setMsg("Выберите мастера.");
+        if (!chosen.length) return setMsg("Выберите услугу (кнопка «Выбрать услуги»).");
+        if (!selectedMasterId) return setMsg("Выберите мастера.");
         if (!dateEl.value) return setMsg("Выберите дату.");
         if (!timeEl.value) return setMsg("Выберите время.");
         if (!nameEl.value.trim()) return setMsg("Введите имя.");
 
-        const masterId = Number(masterEl.value);
-        const masterName = (MASTERS.find(m => m.id === masterId)?.name) || "—";
+        const masterName = (MASTERS.find(m => m.id === selectedMasterId)?.name) || "—";
 
         const payload = {
           booking_id: "BK-" + Date.now(),
           client_name: nameEl.value.trim(),
           phone: normalizePhone(phoneEl.value),
           comment: commentEl.value.trim(),
-          master_id: masterId,
+          master_id: selectedMasterId,
           master_name: masterName,
           date: dateEl.value,
           time: timeEl.value,
@@ -262,6 +652,11 @@
           duration_min: dur,
           client_ts: Date.now(),
         };
+
+        // ✅ сохраняем локально для "Мои записи"
+        const list = loadBookings();
+        list.push(payload);
+        saveBookings(list);
 
         if (tg) {
           tg.sendData(JSON.stringify(payload));
