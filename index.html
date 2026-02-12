@@ -561,6 +561,68 @@
     function getLang(){ return (localStorage.getItem(KEY_LANG) || "ru").toLowerCase(); }
     function setLang(lang){ localStorage.setItem(KEY_LANG, lang); }
 
+    // ✅ Links
+    const IG_URL = "https://instagram.com/thekings_barbershop___";
+    const YANDEX_ROUTE = "https://yandex.uz/maps/org/228446087424/?ll=66.947459%2C39.643585&z=17.08";
+
+    // ✅ Google Sheets (график мастеров)
+    const GS_API = "https://script.google.com/macros/s/AKfycbyqu31ZNNbE30nCxTJHXQALNVp2OExqa0Nj_dZBCUNXnenKCMxGBkxCNXI_yyaYiUKU/exec";
+    const GS_KEY = "TK_2026_SECRET"; // оставлено на будущее (для тумблера мастера)
+
+    // ===== JSONP helper (для Google Apps Script) =====
+    function jsonp(url){
+      return new Promise((resolve, reject)=>{
+        const cbName = "cb_" + Math.random().toString(36).slice(2);
+        const s = document.createElement("script");
+        const sep = url.includes("?") ? "&" : "?";
+        s.src = url + sep + "callback=" + cbName;
+
+        window[cbName] = (data)=>{
+          resolve(data);
+          cleanup();
+        };
+
+        function cleanup(){
+          try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
+          if (s && s.parentNode) s.parentNode.removeChild(s);
+        }
+
+        s.onerror = ()=>{
+          cleanup();
+          reject(new Error("JSONP error"));
+        };
+
+        document.head.appendChild(s);
+      });
+    }
+
+    // ===== Master schedule from Google Sheets =====
+    let mapDays = {}; // { "YYYY-MM-DD": { "1":"off", "2":"work" } }
+
+    function isoMonthRange(dateISO){
+      const [y,m] = dateISO.split("-").map(Number);
+      const p = (n)=> String(n).padStart(2,"0");
+      const from = `${y}-${p(m)}-01`;
+      const lastDay = new Date(y, m, 0).getDate();
+      const to = `${y}-${p(m)}-${p(lastDay)}`;
+      return { from, to };
+    }
+
+    async function gsLoadMonth(dateISO){
+      try{
+        const { from, to } = isoMonthRange(dateISO);
+        const url = `${GS_API}?action=days&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+        const j = await jsonp(url);
+        mapDays = (j && j.ok && j.days) ? j.days : {};
+      }catch(err){
+        mapDays = {};
+      }
+    }
+
+    function getMasterStatus(masterId, dateISO){
+      return (mapDays?.[dateISO]?.[String(masterId)]) || "work";
+    }
+
     const I18N = {
       ru: {
         booking:"Запись", services:"Услуги", pickServices:"Выбор услуг", chooseServices:"Выбрать услуги", notChosen:"Вы не выбрали услуги",
@@ -667,10 +729,6 @@
       const topIgBtn = el("topIgBtn");
       const topGeoBtn = el("topGeoBtn");
 
-      // ✅ Links
-      const IG_URL = "https://instagram.com/thekings_barbershop___";
-      const YANDEX_ROUTE = "https://yandex.uz/maps/org/228446087424/?ll=66.947459%2C39.643585&z=17.08";
-
       // ✅ Make clickable
       topIgBtn.onclick = () => {
         if (tg?.openLink) tg.openLink(IG_URL);
@@ -746,6 +804,9 @@
         renderServicesSheet();
         calc();
         renderBookings();
+
+        // ✅ перерисуем мастеров (на случай изменения языка/даты)
+        renderMasters();
       }
 
       function updateHello(){
@@ -828,18 +889,33 @@
       servicesBackdrop.addEventListener("click", (e) => { if (e.target === servicesBackdrop) sheetClose(servicesBackdrop); });
       servicesConfirm.onclick = () => sheetClose(servicesBackdrop);
 
+      // ✅ Мастера учитывают выходные из Google Sheets
       function renderMasters(){
         mastersRow.innerHTML = "";
+        const d = dateEl.value || todayISO();
+
         MASTERS.forEach(m => {
+          const isOff = (getMasterStatus(m.id, d) === "off");
+
           const c = document.createElement("div");
           c.className = "mcard" + (selectedMasterId === m.id ? " active" : "");
+          c.style.opacity = isOff ? ".45" : "1";
+          c.style.filter = isOff ? "grayscale(1)" : "none";
+
           c.innerHTML = `
             <img class="mava" src="${m.photo}" alt="${m.name}"
               onerror="this.style.opacity='.45'; this.style.filter='grayscale(1)';"/>
             <div class="mname">${m.name}</div>
-            <div class="msub">мастер</div>
+            <div class="msub">${isOff ? "выходной" : "мастер"}</div>
           `;
-          c.onclick = () => { selectedMasterId = m.id; renderMasters(); setMsg(""); };
+
+          c.onclick = () => {
+            if (isOff) return setMsg("Этот мастер сегодня выходной.");
+            selectedMasterId = m.id;
+            renderMasters();
+            setMsg("");
+          };
+
           mastersRow.appendChild(c);
         });
       }
@@ -956,7 +1032,20 @@
 
       dateEl.value = todayISO();
       buildTimes();
-      renderMasters();
+
+      // ✅ загрузка графика на месяц и отрисовка мастеров
+      let lastMonthKey = dateEl.value.slice(0,7);
+      gsLoadMonth(dateEl.value).then(()=> renderMasters());
+
+      // ✅ при смене даты — если месяц другой, перезагрузим
+      dateEl.addEventListener("change", async ()=>{
+        const mk = (dateEl.value || "").slice(0,7);
+        if (mk && mk !== lastMonthKey){
+          lastMonthKey = mk;
+          await gsLoadMonth(dateEl.value);
+        }
+        renderMasters();
+      });
 
       const tgU0 = getTelegramUser();
       if (tgU0.firstName && !nameEl.value) nameEl.value = tgU0.firstName;
