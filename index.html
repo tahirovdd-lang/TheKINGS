@@ -41,10 +41,43 @@
       padding:calc(14px + var(--safeT)) calc(12px + var(--safeL)) calc(92px + var(--safeB)) calc(12px + var(--safeR));
     }
 
-    .top{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+    /* ✅ Main header: THE KINGS left, actions right */
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      min-width:0;
+    }
     .logo{width:56px;height:56px;border-radius:16px;object-fit:cover;border:1px solid var(--stroke)}
+    .brandText{min-width:0}
     h1{margin:0;font-size:22px}
     p{margin:2px 0 0;color:var(--muted);font-weight:700;letter-spacing:2px}
+
+    .topActions{
+      display:flex;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    .iconBtn{
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid rgba(212,160,23,.35);
+      background:rgba(0,0,0,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    .iconBtn:active{transform:translateY(1px)}
+    .iconBtn svg{width:20px;height:20px;fill:rgba(212,160,23,.95)}
 
     .card{border:1px solid var(--stroke);border-radius:18px;padding:14px;margin:12px 0;background:var(--surface)}
     h2{margin:0 0 12px;font-size:16px}
@@ -294,60 +327,33 @@
     .bsub{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.35}
 
     .hello{font-weight:900;margin:0 0 8px;font-size:16px}
-
-    /* ✅ Profile header: logo + clickable geo/instagram opposite */
-    .profileTopRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin:2px 2px 10px;
-    }
-    .pBrand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-    .pLogo{
-      width:44px;height:44px;
-      border-radius:14px;
-      border:1px solid var(--stroke);
-      object-fit:cover;
-      flex:0 0 auto;
-    }
-    .pBrandText{min-width:0}
-    .pBrandText .t1{font-weight:900;line-height:1.05}
-    .pBrandText .t2{color:var(--muted);font-weight:800;letter-spacing:1.6px;font-size:12px;margin-top:2px}
-
-    .pActions{
-      display:flex;
-      gap:8px;
-      flex:0 0 auto;
-    }
-    .pIconBtn{
-      width:44px;height:44px;
-      border-radius:14px;
-      border:1px solid rgba(212,160,23,.35);
-      background:rgba(0,0,0,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      user-select:none;
-    }
-    .pIconBtn:active{transform:translateY(1px)}
-    .pIconBtn svg{width:20px;height:20px;fill:rgba(212,160,23,.95)}
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <header class="top">
-      <img class="logo" src="./images/logo.jpg" alt="THE KINGS"/>
-      <div>
-        <h1>THE KINGS</h1>
-        <p>BARBERSHOP</p>
+      <div class="brand">
+        <img class="logo" src="./images/logo.jpg" alt="THE KINGS"/>
+        <div class="brandText">
+          <h1>THE KINGS</h1>
+          <p>BARBERSHOP</p>
+        </div>
+      </div>
+
+      <!-- ✅ moved IG/Geo here (right side of THE KINGS header) -->
+      <div class="topActions">
+        <button id="topIgBtn" class="iconBtn" type="button" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4.5A5.5 5.5 0 1 1 6.5 14 5.5 5.5 0 0 1 12 8.5Zm0 2A3.5 3.5 0 1 0 15.5 14 3.5 3.5 0 0 0 12 10.5ZM18 7.2a1 1 0 1 1-1-1 1 1 0 0 1 1 1Z"/>
+          </svg>
+        </button>
+
+        <button id="topGeoBtn" class="iconBtn" type="button" aria-label="Геолокация">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 14.5 9 2.5 2.5 0 0 1 12 11.5Z"/>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -462,31 +468,7 @@
         <button id="profileClose" class="xbtn" type="button">Закрыть</button>
       </div>
 
-      <!-- ✅ ШАПКА ПРОФИЛЯ: логотип слева, кнопки Instagram/Geo справа -->
-      <div class="profileTopRow">
-        <div class="pBrand">
-          <img class="pLogo" src="./images/logo.jpg" alt="THE KINGS">
-          <div class="pBrandText">
-            <div class="t1">THE KINGS</div>
-            <div class="t2">BARBERSHOP</div>
-          </div>
-        </div>
-
-        <div class="pActions">
-          <button id="profileIgBtn" class="pIconBtn" type="button" aria-label="Instagram">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4.5A5.5 5.5 0 1 1 6.5 14 5.5 5.5 0 0 1 12 8.5Zm0 2A3.5 3.5 0 1 0 15.5 14 3.5 3.5 0 0 0 12 10.5ZM18 7.2a1 1 0 1 1-1-1 1 1 0 0 1 1 1Z"/>
-            </svg>
-          </button>
-
-          <button id="profileGeoBtn" class="pIconBtn" type="button" aria-label="Геолокация">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 14.5 9 2.5 2.5 0 0 1 12 11.5Z"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
+      <!-- ✅ removed IG/Geo from profile header -->
       <div class="hello" id="helloLine">Приветствую Вас</div>
       <div class="tag" id="tgTag">Telegram: —</div>
 
@@ -681,20 +663,20 @@
       const tgTag = el("tgTag");
       const langSeg = el("langSeg");
 
-      // ✅ Profile header icon buttons
-      const profileIgBtn = el("profileIgBtn");
-      const profileGeoBtn = el("profileGeoBtn");
+      // ✅ Header buttons (moved from profile)
+      const topIgBtn = el("topIgBtn");
+      const topGeoBtn = el("topGeoBtn");
 
       // ✅ Links
       const IG_URL = "https://instagram.com/thekings_barbershop___";
       const YANDEX_ROUTE = "https://yandex.uz/maps/org/228446087424/?ll=66.947459%2C39.643585&z=17.08";
 
       // ✅ Make clickable
-      profileIgBtn.onclick = () => {
+      topIgBtn.onclick = () => {
         if (tg?.openLink) tg.openLink(IG_URL);
         else window.open(IG_URL, "_blank");
       };
-      profileGeoBtn.onclick = () => {
+      topGeoBtn.onclick = () => {
         if (tg?.openLink) tg.openLink(YANDEX_ROUTE);
         else window.open(YANDEX_ROUTE, "_blank");
       };
