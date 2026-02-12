@@ -327,6 +327,61 @@
     .bsub{margin-top:4px;color:var(--muted);font-size:12px;line-height:1.35}
 
     .hello{font-weight:900;margin:0 0 8px;font-size:16px}
+
+    /* ====== Toggle (тумблер) ====== */
+    .rowLine{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:10px;
+      padding:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      border-radius:14px;
+    }
+    .rowLine .ttl{font-weight:900}
+    .rowLine .sub{color:var(--muted);font-size:12px;margin-top:2px}
+    .switch{
+      position:relative; width:52px; height:30px; flex:0 0 auto;
+    }
+    .switch input{display:none}
+    .track{
+      position:absolute; inset:0;
+      border-radius:999px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.14);
+      transition:.18s ease;
+    }
+    .thumb{
+      position:absolute;
+      top:50%; left:4px;
+      width:22px; height:22px;
+      border-radius:999px;
+      transform:translateY(-50%);
+      background:rgba(255,255,255,.86);
+      transition:.18s ease;
+    }
+    .switch input:checked + .track{
+      background:rgba(212,160,23,.26);
+      border-color:rgba(212,160,23,.35);
+    }
+    .switch input:checked + .track .thumb{
+      left:26px;
+      background:rgba(212,160,23,.95);
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+    }
   </style>
 </head>
 
@@ -341,7 +396,6 @@
         </div>
       </div>
 
-      <!-- ✅ moved IG/Geo here (right side of THE KINGS header) -->
       <div class="topActions">
         <button id="topIgBtn" class="iconBtn" type="button" aria-label="Instagram">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -468,7 +522,6 @@
         <button id="profileClose" class="xbtn" type="button">Закрыть</button>
       </div>
 
-      <!-- ✅ removed IG/Geo from profile header -->
       <div class="hello" id="helloLine">Приветствую Вас</div>
       <div class="tag" id="tgTag">Telegram: —</div>
 
@@ -488,6 +541,34 @@
 
         <div class="hr"></div>
         <button id="btnSaveProfile" class="btn" type="button">Войти / Сохранить</button>
+      </div>
+
+      <!-- ✅ ПАНЕЛЬ МАСТЕРА / АДМИНА -->
+      <div id="masterPanel" style="display:none">
+        <div class="hr"></div>
+        <div class="tag" style="font-weight:900">Панель мастера</div>
+
+        <div class="badge" id="masterRoleBadge">Роль: —</div>
+
+        <label style="margin-top:12px">Мастер</label>
+        <select id="masterSelect"></select>
+
+        <label style="margin-top:12px">Дата</label>
+        <input id="masterDayDate" type="date"/>
+
+        <div class="rowLine">
+          <div>
+            <div class="ttl">Выходной</div>
+            <div class="sub" id="masterDayHint">—</div>
+          </div>
+
+          <label class="switch" aria-label="Выходной">
+            <input id="masterDayOff" type="checkbox"/>
+            <span class="track"><span class="thumb"></span></span>
+          </label>
+        </div>
+
+        <div class="msg" id="masterDayMsg"></div>
       </div>
 
       <div class="hr"></div>
@@ -539,6 +620,7 @@
     const KEY_PROFILE = "tk_profile_v5";
     const KEY_BOOKINGS = "tk_bookings_v5";
     const KEY_LANG = "tk_lang_v4";
+    const KEY_MASTER_MODE = "tk_master_mode_v1"; // { master_id: 1 }
 
     function fmtSum(n){
       const x = Number(n) || 0;
@@ -558,6 +640,9 @@
     function loadBookings(){ try { return JSON.parse(localStorage.getItem(KEY_BOOKINGS) || "[]"); } catch { return []; } }
     function saveBookings(arr){ localStorage.setItem(KEY_BOOKINGS, JSON.stringify(arr)); }
 
+    function loadMasterMode(){ try { return JSON.parse(localStorage.getItem(KEY_MASTER_MODE) || "null"); } catch { return null; } }
+    function saveMasterMode(x){ localStorage.setItem(KEY_MASTER_MODE, JSON.stringify(x)); }
+
     function getLang(){ return (localStorage.getItem(KEY_LANG) || "ru").toLowerCase(); }
     function setLang(lang){ localStorage.setItem(KEY_LANG, lang); }
 
@@ -567,9 +652,12 @@
 
     // ✅ Google Sheets (график мастеров)
     const GS_API = "https://script.google.com/macros/s/AKfycbyqu31ZNNbE30nCxTJHXQALNVp2OExqa0Nj_dZBCUNXnenKCMxGBkxCNXI_yyaYiUKU/exec";
-    const GS_KEY = "TK_2026_SECRET"; // оставлено на будущее (для тумблера мастера)
+    const GS_KEY = "TK_2026_SECRET"; // ВАЖНО: ключ в клиенте виден. Если хочешь безопасно — делаем через бота/сервер.
 
-    // ===== JSONP helper (для Google Apps Script) =====
+    // ✅ Кто админ (по Telegram ID)
+    const ADMIN_IDS = [6013591658]; // твой ID (если надо — добавь еще)
+
+    // ===== JSONP helper =====
     function jsonp(url){
       return new Promise((resolve, reject)=>{
         const cbName = "cb_" + Math.random().toString(36).slice(2);
@@ -619,8 +707,30 @@
       }
     }
 
+    function ensureDayObj_(dateISO){
+      if (!mapDays[dateISO]) mapDays[dateISO] = {};
+      return mapDays[dateISO];
+    }
+
     function getMasterStatus(masterId, dateISO){
       return (mapDays?.[dateISO]?.[String(masterId)]) || "work";
+    }
+
+    async function gsSetDay(masterId, dateISO, status){
+      const url =
+        `${GS_API}?action=setday` +
+        `&key=${encodeURIComponent(GS_KEY)}` +
+        `&master_id=${encodeURIComponent(String(masterId))}` +
+        `&date=${encodeURIComponent(String(dateISO))}` +
+        `&status=${encodeURIComponent(String(status))}`;
+
+      const j = await jsonp(url);
+      if (!j || !j.ok) throw new Error(j?.error || "Ошибка сохранения");
+
+      // обновим локальную карту
+      const d = ensureDayObj_(dateISO);
+      d[String(masterId)] = status;
+      return j;
     }
 
     const I18N = {
@@ -680,6 +790,20 @@
       return new Date(y, (m-1), d, hh, mm, 0, 0).getTime();
     }
 
+    function getTelegramUser(){
+      const u = tg?.initDataUnsafe?.user;
+      return {
+        id: u?.id || 0,
+        firstName: u?.first_name || "",
+        username: u?.username ? ("@" + u.username) : ""
+      };
+    }
+
+    function isAdmin(){
+      const u = getTelegramUser();
+      return !!(u.id && ADMIN_IDS.includes(Number(u.id)));
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       if (tg) {
         tg.ready();
@@ -725,21 +849,22 @@
       const tgTag = el("tgTag");
       const langSeg = el("langSeg");
 
-      // ✅ Header buttons (moved from profile)
+      // master/admin panel
+      const masterPanel = el("masterPanel");
+      const masterRoleBadge = el("masterRoleBadge");
+      const masterSelect = el("masterSelect");
+      const masterDayDate = el("masterDayDate");
+      const masterDayOff = el("masterDayOff");
+      const masterDayHint = el("masterDayHint");
+      const masterDayMsg = el("masterDayMsg");
+
+      // ✅ Header buttons
       const topIgBtn = el("topIgBtn");
       const topGeoBtn = el("topGeoBtn");
 
-      // ✅ Make clickable
-      topIgBtn.onclick = () => {
-        if (tg?.openLink) tg.openLink(IG_URL);
-        else window.open(IG_URL, "_blank");
-      };
-      topGeoBtn.onclick = () => {
-        if (tg?.openLink) tg.openLink(YANDEX_ROUTE);
-        else window.open(YANDEX_ROUTE, "_blank");
-      };
+      topIgBtn.onclick = () => { if (tg?.openLink) tg.openLink(IG_URL); else window.open(IG_URL, "_blank"); };
+      topGeoBtn.onclick = () => { if (tg?.openLink) tg.openLink(YANDEX_ROUTE); else window.open(YANDEX_ROUTE, "_blank"); };
 
-      // Works -> instagram
       document.querySelectorAll(".workCard").forEach(a=>{
         a.addEventListener("click", (e)=>{
           e.preventDefault();
@@ -753,14 +878,6 @@
 
       function setMsg(t){ msgEl.textContent = t || ""; }
       function strings(){ return I18N[getLang()] || I18N.ru; }
-
-      function getTelegramUser(){
-        const u = tg?.initDataUnsafe?.user;
-        return {
-          firstName: u?.first_name || "",
-          username: u?.username ? ("@" + u.username) : ""
-        };
-      }
 
       function applyLang(){
         const s = strings();
@@ -804,9 +921,8 @@
         renderServicesSheet();
         calc();
         renderBookings();
-
-        // ✅ перерисуем мастеров (на случай изменения языка/даты)
         renderMasters();
+        renderMasterPanel();
       }
 
       function updateHello(){
@@ -889,7 +1005,7 @@
       servicesBackdrop.addEventListener("click", (e) => { if (e.target === servicesBackdrop) sheetClose(servicesBackdrop); });
       servicesConfirm.onclick = () => sheetClose(servicesBackdrop);
 
-      // ✅ Мастера учитывают выходные из Google Sheets
+      // ✅ Мастера учитывают выходные
       function renderMasters(){
         mastersRow.innerHTML = "";
         const d = dateEl.value || todayISO();
@@ -996,6 +1112,8 @@
 
         updateHello();
         renderBookings();
+        renderMasterPanel();
+
         sheetOpen(profileWindow);
       }
 
@@ -1026,6 +1144,105 @@
         updateHello();
       };
 
+      // ====== Панель мастера / админа ======
+      function fillMasterSelect(selectedId){
+        masterSelect.innerHTML = "";
+        MASTERS.forEach(m=>{
+          const opt = document.createElement("option");
+          opt.value = String(m.id);
+          opt.textContent = `${m.name}`;
+          masterSelect.appendChild(opt);
+        });
+        if (selectedId) masterSelect.value = String(selectedId);
+      }
+
+      async function refreshMasterDayUI(){
+        const mid = Number(masterSelect.value || 0);
+        const d = masterDayDate.value || todayISO();
+        masterDayMsg.textContent = "";
+
+        // если месяц другой — подгрузим
+        const mk = d.slice(0,7);
+        if (mk && mk !== lastMonthKey){
+          lastMonthKey = mk;
+          await gsLoadMonth(d);
+        }
+
+        const st = getMasterStatus(mid, d);
+        const isOff = (st === "off");
+        masterDayOff.checked = isOff;
+        masterDayHint.textContent = isOff ? "Сейчас: выходной (клиенты не смогут выбрать)" : "Сейчас: рабочий день";
+      }
+
+      function renderMasterPanel(){
+        // показываем панель только админу или если пользователь выбрал себя мастером
+        const admin = isAdmin();
+        const mm = loadMasterMode() || {};
+
+        // если не админ — разрешаем включить «мастер режим» через выбор мастера
+        // (чтобы каждый мастер мог поставить себе выходной)
+        const canShow = admin || !!mm.master_id;
+        masterPanel.style.display = canShow ? "" : "none";
+
+        if (!canShow) return;
+
+        masterRoleBadge.textContent = admin ? "Роль: админ (можете менять всем)" : "Роль: мастер (только себе)";
+
+        // какой мастер выбран
+        const selectedId = admin ? (Number(masterSelect.value)||mm.master_id||1) : (mm.master_id||1);
+
+        fillMasterSelect(selectedId);
+        masterSelect.disabled = !admin; // мастеру нельзя переключать других
+        if (!masterDayDate.value) masterDayDate.value = todayISO();
+
+        refreshMasterDayUI();
+      }
+
+      // если пользователь НЕ админ и еще не выбрал мастера — спросим один раз при открытии профиля
+      function ensureMasterModeChoice(){
+        if (isAdmin()) return;
+        const mm = loadMasterMode();
+        if (mm && mm.master_id) return;
+
+        // простое окно выбора (чтобы мастер закрепил себя)
+        const names = MASTERS.map(m=>`${m.id} — ${m.name}`).join("\n");
+        const picked = prompt("Если вы мастер — выберите свой ID мастера:\n" + names + "\n\n(Если вы клиент — нажмите Отмена)");
+        if (!picked) return;
+        const id = Number(String(picked).trim());
+        if (!MASTERS.find(m=>m.id===id)) return;
+        saveMasterMode({ master_id: id });
+      }
+
+      masterSelect.addEventListener("change", ()=>{
+        // если админ — запомним выбор в localStorage, чтобы удобно было
+        if (isAdmin()){
+          saveMasterMode({ ...(loadMasterMode()||{}), admin_last_master_id: Number(masterSelect.value||0) });
+        }
+        refreshMasterDayUI();
+      });
+
+      masterDayDate.addEventListener("change", refreshMasterDayUI);
+
+      masterDayOff.addEventListener("change", async ()=>{
+        const mid = Number(masterSelect.value || 0);
+        const d = masterDayDate.value || todayISO();
+        const status = masterDayOff.checked ? "off" : "work";
+
+        masterDayMsg.textContent = "Сохраняю...";
+        try{
+          await gsSetDay(mid, d, status);
+          masterDayMsg.textContent = "✅ Сохранено";
+
+          // если пользователь меняет статус на дату, которая выбрана в форме записи — обновим список мастеров
+          if ((dateEl.value || "") === d) renderMasters();
+          await refreshMasterDayUI();
+        }catch(err){
+          masterDayMsg.textContent = "❌ Ошибка: " + (err?.message || String(err));
+          // откатим визуально
+          await refreshMasterDayUI();
+        }
+      });
+
       // init
       const prof0 = loadProfile();
       if (prof0?.lang) setLang(prof0.lang);
@@ -1033,11 +1250,11 @@
       dateEl.value = todayISO();
       buildTimes();
 
-      // ✅ загрузка графика на месяц и отрисовка мастеров
+      // загрузка графика на месяц и отрисовка мастеров
       let lastMonthKey = dateEl.value.slice(0,7);
       gsLoadMonth(dateEl.value).then(()=> renderMasters());
 
-      // ✅ при смене даты — если месяц другой, перезагрузим
+      // при смене даты — если месяц другой, перезагрузим
       dateEl.addEventListener("change", async ()=>{
         const mk = (dateEl.value || "").slice(0,7);
         if (mk && mk !== lastMonthKey){
@@ -1069,6 +1286,10 @@
         if (!dateEl.value) return setMsg(s.pickDate);
         if (!timeEl.value) return setMsg(s.pickTime);
         if (!nameEl.value.trim()) return setMsg(s.enterName);
+
+        // защита: если мастер стал выходной — не давать отправить
+        const st = getMasterStatus(selectedMasterId, dateEl.value);
+        if (st === "off") return setMsg("Выбранный мастер сегодня выходной. Выберите другого.");
 
         const masterName = (MASTERS.find(m => m.id === selectedMasterId)?.name) || "—";
         const prof = loadProfile() || {};
@@ -1105,6 +1326,11 @@
           setMsg(s.testHint);
         }
       };
+
+      // при первом открытии профиля дадим мастеру закрепить себя
+      fabProfile.addEventListener("click", ()=>{ ensureMasterModeChoice(); });
+      // и отрисуем панель после выбора
+      fabProfile.addEventListener("click", ()=>{ setTimeout(()=>renderMasterPanel(), 0); });
     });
   </script>
 </body>
