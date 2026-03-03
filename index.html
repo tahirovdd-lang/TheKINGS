@@ -388,6 +388,42 @@
       font-size:12px;
       margin-top:10px;
     }
+
+    /* ✅ Master details (sheet) */
+    .masterHero{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      padding:4px 0 2px;
+    }
+    .masterBigImg{
+      width:min(320px, 86vw);
+      aspect-ratio: 1 / 1;
+      border-radius:22px;
+      object-fit:cover;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.06);
+    }
+    .masterInfoCard{
+      width:100%;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:12px;
+      margin-top:8px;
+    }
+    .masterInfoName{font-weight:900;font-size:16px}
+    .masterInfoFull{color:var(--muted);margin-top:4px;line-height:1.35}
+    .masterInfoExp{
+      margin-top:10px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .masterInfoExp b{color:var(--text)}
   </style>
 </head>
 
@@ -519,6 +555,30 @@
     </div>
   </div>
 
+  <!-- ✅ Master details sheet (NEW) -->
+  <div id="masterBackdrop" class="sheetBackdrop" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sheetHeader">
+        <div class="sheetTitle" id="t_master_info">Мастер</div>
+        <button id="masterClose" class="xbtn" type="button">Закрыть</button>
+      </div>
+
+      <div class="masterHero">
+        <img id="masterBigImg" class="masterBigImg" src="" alt="Master photo"/>
+      </div>
+
+      <div class="masterInfoCard">
+        <div id="masterInfoName" class="masterInfoName">—</div>
+        <div id="masterInfoFull" class="masterInfoFull">—</div>
+        <div class="masterInfoExp">
+          <div id="t_master_exp">Стаж</div>
+          <div><b id="masterInfoExp">—</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Profile sheet -->
   <div id="profileWindow" class="sheetBackdrop" role="dialog" aria-modal="true">
     <div class="sheet">
@@ -597,9 +657,27 @@
     const tg = (typeof window !== "undefined") ? window.Telegram?.WebApp : null;
 
     const MASTERS = [
-      { id: 1, name: "Dilshod", photo: "./images/master_dilshod.jpg" },
-      { id: 2, name: "Daler",   photo: "./images/master_daler.jpg" },
-      { id: 3, name: "Azim",    photo: "./images/master_azim.jpg" },
+      {
+        id: 1,
+        name: "Dilshod",
+        full_name: "Рашидов Дильшод Шухратович",
+        exp_years: 8,
+        photo: "./images/master_dilshod.jpg"
+      },
+      {
+        id: 2,
+        name: "Daler",
+        full_name: "Гуломов Далер Аслиддинович",
+        exp_years: 7,
+        photo: "./images/master_daler.jpg"
+      },
+      {
+        id: 3,
+        name: "Azim",
+        full_name: "Негматов Азим Олимович",
+        exp_years: 5,
+        photo: "./images/master_azim.jpg"
+      },
     ];
 
     const SERVICES = [
@@ -752,7 +830,8 @@
         myBookings:"Мои записи", upcoming:"Предстоящие", past:"Прошедшие",
         noneUpcoming:"Предстоящих записей нет.", nonePast:"Прошедших записей нет.",
         testHint:"✅ (Тест) Откройте через Telegram WebApp чтобы отправить.",
-        hello:"Приветствую Вас"
+        hello:"Приветствую Вас",
+        masterInfo:"Мастер", exp:"Стаж"
       },
       uz: {
         booking:"Yozilish", services:"Xizmatlar", pickServices:"Xizmat tanlash", chooseServices:"Xizmatlarni tanlash", notChosen:"Xizmat tanlanmagan",
@@ -766,7 +845,8 @@
         myBookings:"Mening yozilishlarim", upcoming:"Kelajakdagi", past:"O‘tgan",
         noneUpcoming:"Kelajakdagi yozilish yo‘q.", nonePast:"O‘tgan yozilish yo‘q.",
         testHint:"✅ (Test) Telegram WebApp orqali oching.",
-        hello:"Xush kelibsiz"
+        hello:"Xush kelibsiz",
+        masterInfo:"Usta", exp:"Staj"
       },
       en: {
         booking:"Booking", services:"Services", pickServices:"Pick services", chooseServices:"Choose services", notChosen:"No services selected",
@@ -780,7 +860,8 @@
         myBookings:"My bookings", upcoming:"Upcoming", past:"Past",
         noneUpcoming:"No upcoming bookings.", nonePast:"No past bookings.",
         testHint:"✅ (Test) Open via Telegram WebApp to send.",
-        hello:"Welcome"
+        hello:"Welcome",
+        masterInfo:"Master", exp:"Experience"
       }
     };
 
@@ -855,6 +936,14 @@
       const tgTag = el("tgTag");
       const langSeg = el("langSeg");
 
+      // ✅ Master details sheet (NEW)
+      const masterBackdrop = el("masterBackdrop");
+      const masterClose = el("masterClose");
+      const masterBigImg = el("masterBigImg");
+      const masterInfoName = el("masterInfoName");
+      const masterInfoFull = el("masterInfoFull");
+      const masterInfoExp = el("masterInfoExp");
+
       // master/admin panel
       const masterPanel = el("masterPanel");
       const masterRoleBadge = el("masterRoleBadge");
@@ -884,6 +973,32 @@
 
       function setMsg(t){ msgEl.textContent = t || ""; }
       function strings(){ return I18N[getLang()] || I18N.ru; }
+
+      // ✅ Open master info (NEW)
+      function openMasterInfo(m){
+        const s = strings();
+        el("t_master_info").textContent = s.masterInfo || "Мастер";
+        el("t_master_exp").textContent = s.exp || "Стаж";
+
+        masterBigImg.src = m.photo;
+        masterBigImg.alt = m.name;
+
+        masterInfoName.textContent = m.name || "—";
+        masterInfoFull.textContent = m.full_name || "—";
+
+        // вывод стажа красиво
+        const yrs = Number(m.exp_years || 0);
+        const lang = getLang();
+        let suffix = "лет";
+        if (lang === "en") suffix = "years";
+        if (lang === "uz") suffix = "yil";
+        masterInfoExp.textContent = yrs ? `${yrs} ${suffix}` : "—";
+
+        sheetOpen(masterBackdrop);
+      }
+
+      masterClose.onclick = () => sheetClose(masterBackdrop);
+      masterBackdrop.addEventListener("click", (e) => { if (e.target === masterBackdrop) sheetClose(masterBackdrop); });
 
       function applyLang(){
         const s = strings();
@@ -918,6 +1033,10 @@
         btnMyBookings.textContent = s.myBookings;
         el("t_upcoming_tag").textContent = s.upcoming;
         el("t_past_tag").textContent = s.past;
+
+        // master sheet labels
+        el("t_master_info").textContent = s.masterInfo || "Мастер";
+        el("t_master_exp").textContent = s.exp || "Стаж";
 
         [...langSeg.querySelectorAll("button[data-lang]")].forEach(b=>{
           b.classList.toggle("active", b.dataset.lang === getLang());
@@ -1011,7 +1130,7 @@
       servicesBackdrop.addEventListener("click", (e) => { if (e.target === servicesBackdrop) sheetClose(servicesBackdrop); });
       servicesConfirm.onclick = () => sheetClose(servicesBackdrop);
 
-      // ✅ Мастера учитывают выходные
+      // ✅ Мастера учитывают выходные + фото открывает подробности (NEW)
       function renderMasters(){
         mastersRow.innerHTML = "";
         const d = dateEl.value || todayISO();
@@ -1031,12 +1150,24 @@
             <div class="msub">${isOff ? "выходной" : "мастер"}</div>
           `;
 
+          // клик по карточке = выбор мастера (как было)
           c.onclick = () => {
             if (isOff) return setMsg("Этот мастер сегодня выходной.");
             selectedMasterId = m.id;
             renderMasters();
             setMsg("");
           };
+
+          // ✅ клик по фото = открыть подробности (NEW)
+          const img = c.querySelector(".mava");
+          if (img){
+            img.style.cursor = "pointer";
+            img.addEventListener("click", (e)=>{
+              e.preventDefault();
+              e.stopPropagation();
+              openMasterInfo(m);
+            });
+          }
 
           mastersRow.appendChild(c);
         });
